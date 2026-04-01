@@ -1,10 +1,24 @@
 ---
+- name: Check local installer archive path
+  ansible.builtin.stat:
+    path: "{{ aap_installer_local_path }}"
+  register: aap_preflight_local_installer_stat
+  when: aap_installer_local_path | length > 0
+
 - name: Validate installer source is provided
   ansible.builtin.assert:
     that:
-      - aap_installer_url | length > 0 or aap_installer_local_path | length > 0
+      - >-
+        (aap_installer_url | length > 0)
+        or (
+          (aap_installer_local_path | length > 0)
+          and (aap_preflight_local_installer_stat is defined)
+          and (aap_preflight_local_installer_stat.stat.exists | default(false))
+          and (aap_preflight_local_installer_stat.stat.isreg | default(false))
+        )
     fail_msg: >-
-      Provide either AAP_INSTALLER_URL or AAP_INSTALLER_LOCAL_PATH before running
+      Provide either AAP_INSTALLER_URL or a valid installer file path in
+      AAP_INSTALLER_LOCAL_PATH before running
       provision/playbooks/install_aap_containerized.yml.
 
 - name: Ensure install user exists on host

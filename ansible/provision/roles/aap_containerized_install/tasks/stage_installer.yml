@@ -3,13 +3,31 @@
   ansible.builtin.set_fact:
     aap_installer_archive_path: "{{ aap_install_dir }}/{{ aap_installer_archive_name }}"
 
+- name: Check local installer archive path
+  ansible.builtin.stat:
+    path: "{{ aap_installer_local_path }}"
+  register: aap_local_installer_stat
+  when: aap_installer_local_path | length > 0
+
+- name: Determine whether local installer archive can be used
+  ansible.builtin.set_fact:
+    aap_use_local_installer: >-
+      {{
+        (aap_installer_local_path | length > 0)
+        and (aap_local_installer_stat is defined)
+        and (aap_local_installer_stat.stat.exists | default(false))
+        and (aap_local_installer_stat.stat.isreg | default(false))
+      }}
+
 - name: Download installer archive from URL
   ansible.builtin.get_url:
     url: "{{ aap_installer_url }}"
     dest: "{{ aap_installer_archive_path }}"
     mode: "0644"
     force: false
-  when: aap_installer_url | length > 0
+  when:
+    - not aap_use_local_installer | default(false)
+    - aap_installer_url | length > 0
 
 - name: Copy installer archive from local path on managed host
   ansible.builtin.copy:
@@ -17,9 +35,7 @@
     dest: "{{ aap_installer_archive_path }}"
     remote_src: true
     mode: "0644"
-  when:
-    - aap_installer_url | length == 0
-    - aap_installer_local_path | length > 0
+  when: aap_use_local_installer | default(false)
 
 - name: Detect installer top directory from tarball
   ansible.builtin.command: "tar -tf {{ aap_installer_archive_path }}"
