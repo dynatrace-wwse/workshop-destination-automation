@@ -11,7 +11,7 @@ collections:
   - name: awx.awx
     version: ">=24.6.1"
   - name: dynatrace.oneagent
-    version: ">=1.6.0"
+    version: ">=1.2.5"
   - name: ansible.eda
     version: ">=2.0.0"
   # podman_container, podman_image, and related modules

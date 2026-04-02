@@ -713,10 +713,16 @@ aap_dt_de_name: "destination-automation-dt-de"
 aap_dt_de_description: "Decision Environment with Dynatrace EDA collection (de-supported-rhel9 base)"
 aap_dt_de_image: "{{ aap_custom_ee_registry_host }}/destination-automation-dt-de:latest"
 
-# EDA Project — requires GITHUB_USERNAME and GITHUB_TOKEN env vars at playbook run time.
+# EDA Project
+# Set EDA_PROJECT_PUBLIC=false to use private repo with SCM credentials.
+# Set EDA_PROJECT_GIT_URL to override the default repository URL.
+# Set EDA_PROJECT_SCM_USERNAME and EDA_PROJECT_SCM_TOKEN for private repo access.
+aap_eda_project_public: "{{ (lookup('ansible.builtin.env', 'EDA_PROJECT_PUBLIC') | default('true', true)) | bool }}"
 aap_eda_project_name: "destination-automation"
 aap_eda_project_description: "Workshop EDA rulebooks project"
-aap_eda_project_url: "https://github.com/dynatrace-wwse/workshop-destination-automation.git"
+aap_eda_project_url: "{{ lookup('ansible.builtin.env', 'EDA_PROJECT_GIT_URL') | default('https://github.com/dynatrace-wwse/workshop-destination-automation.git', true) }}"
+aap_eda_scm_username: "{{ lookup('ansible.builtin.env', 'EDA_PROJECT_SCM_USERNAME') | default('', true) }}"
+aap_eda_scm_token: "{{ lookup('ansible.builtin.env', 'EDA_PROJECT_SCM_TOKEN') | default('', true) }}"
 aap_eda_scm_credential_name: "destination-automation-github"
 aap_eda_aap_credential_name: "destination-automation-aap"
 # Host URL used inside the EDA AAP credential — must be reachable from inside the DE container.

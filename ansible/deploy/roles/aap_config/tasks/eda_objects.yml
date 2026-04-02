@@ -5,15 +5,12 @@
 # Run standalone via:
 #   ansible-playbook deploy/playbooks/configure_eda.yml
 #
-# Required environment variables (must be exported before running):
-#   GITHUB_USERNAME  - GitHub username that owns the private repo
-#   GITHUB_TOKEN     - GitHub Personal Access Token with repo read scope
+# Environment variables:
+#   EDA_PROJECT_GIT_URL      - Override the default repository URL (optional)
+#   EDA_PROJECT_PUBLIC       - Set to 'false' for private repo (default: true)
+#   EDA_PROJECT_SCM_USERNAME - SCM username (required when EDA_PROJECT_PUBLIC=false)
+#   EDA_PROJECT_SCM_TOKEN    - SCM personal access token (required when EDA_PROJECT_PUBLIC=false)
 # =============================================================
-
-- name: "aap_config | Read GitHub credentials from environment"
-  ansible.builtin.set_fact:
-    _eda_github_username: "{{ lookup('ansible.builtin.env', 'GITHUB_USERNAME') }}"
-    _eda_github_token: "{{ lookup('ansible.builtin.env', 'GITHUB_TOKEN') }}"
 
 - name: "aap_config | Ensure generated password storage exists"
   ansible.builtin.file:
@@ -31,14 +28,44 @@
       }}
   no_log: true
 
-- name: "aap_config | Fail if GitHub credentials are not set"
+- name: "aap_config | Fail fast when private repo credentials are not provided"
   ansible.builtin.fail:
     msg: |
-      Required environment variables are not set.
+      EDA_PROJECT_PUBLIC is set to false but SCM credentials are missing.
       Please export both before running this playbook:
-        export GITHUB_USERNAME=<your_github_username>
-        export GITHUB_TOKEN=<your_github_personal_access_token>
-  when: _eda_github_username == '' or _eda_github_token == ''
+        export EDA_PROJECT_SCM_USERNAME=<your_scm_username>
+        export EDA_PROJECT_SCM_TOKEN=<your_personal_access_token_with_repo_read_scope>
+  when:
+    - not aap_eda_project_public
+    - aap_eda_scm_username == '' or aap_eda_scm_token == ''
+
+- name: "aap_config | Verify private repository is accessible with provided credentials"
+  ansible.builtin.uri:
+    url: "{{ aap_eda_project_url | regex_replace('https://github.com/', 'https://api.github.com/repos/') | regex_replace('\\.git$', '') }}"
+    method: GET
+    user: "{{ aap_eda_scm_username }}"
+    password: "{{ aap_eda_scm_token }}"
+    force_basic_auth: true
+    validate_certs: true
+    status_code: 200
+  no_log: true
+  register: _eda_repo_check
+  failed_when: false
+  when:
+    - not aap_eda_project_public
+    - aap_eda_scm_username != ''
+    - aap_eda_scm_token != ''
+
+- name: "aap_config | Fail if private repository credentials did not authenticate"
+  ansible.builtin.fail:
+    msg: |
+      The repository '{{ aap_eda_project_url }}' is private and the provided credentials did not work.
+      Verify EDA_PROJECT_SCM_USERNAME and EDA_PROJECT_SCM_TOKEN are correct and the token has 'repo' read scope.
+  when:
+    - not aap_eda_project_public
+    - _eda_repo_check is defined
+    - _eda_repo_check.status is defined
+    - _eda_repo_check.status != 200
 
 - name: "aap_config | Register Dynatrace Decision Environment in EDA"
   ansible.eda.decision_environment:
@@ -57,22 +84,37 @@
   ansible.builtin.debug:
     msg: "Dynatrace DE registered: {{ _aap_eda_dt_de_result.id | default('already present') }}"
 
-- name: "aap_config | Create EDA SCM credential for GitHub"
+- name: "aap_config | Create EDA SCM credential for private repository"
   ansible.eda.credential:
     controller_host: "{{ aap_eda_controller_host }}"
     controller_username: "{{ aap_eda_controller_username }}"
     controller_password: "{{ aap_eda_controller_password }}"
     validate_certs: "{{ aap_eda_controller_validate_certs }}"
     name: "{{ aap_eda_scm_credential_name }}"
-    description: "GitHub PAT for EDA project source control"
+    description: "SCM credential for private EDA project source control"
     credential_type_name: "Source Control"
     inputs:
-      username: "{{ _eda_github_username }}"
-      password: "{{ _eda_github_token }}"
+      username: "{{ aap_eda_scm_username }}"
+      password: "{{ aap_eda_scm_token }}"
     organization_name: "{{ aap_org_name }}"
     state: present
+  when: not aap_eda_project_public
 
-- name: "aap_config | Create EDA project"
+- name: "aap_config | Create EDA project (public repository)"
+  ansible.eda.project:
+    controller_host: "{{ aap_eda_controller_host }}"
+    controller_username: "{{ aap_eda_controller_username }}"
+    controller_password: "{{ aap_eda_controller_password }}"
+    validate_certs: "{{ aap_eda_controller_validate_certs }}"
+    name: "{{ aap_eda_project_name }}"
+    description: "{{ aap_eda_project_description }}"
+    url: "{{ aap_eda_project_url }}"
+    organization_name: "{{ aap_org_name }}"
+    state: present
+  register: _aap_eda_project_result
+  when: aap_eda_project_public
+
+- name: "aap_config | Create EDA project (private repository)"
   ansible.eda.project:
     controller_host: "{{ aap_eda_controller_host }}"
     controller_username: "{{ aap_eda_controller_username }}"
@@ -85,10 +127,11 @@
     organization_name: "{{ aap_org_name }}"
     state: present
   register: _aap_eda_project_result
+  when: not aap_eda_project_public
 
 - name: "aap_config | Display EDA project registration result"
   ansible.builtin.debug:
-    msg: "EDA project registered: {{ _aap_eda_project_result.id | default('already present') }}"
+    msg: "EDA project registered: {{ (_aap_eda_project_result.id | default('already present')) if _aap_eda_project_result is not skipped else 'already present' }}"
 
 - name: "aap_config | Wait for EDA project sync to complete"
   ansible.eda.project_info:

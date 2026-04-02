@@ -154,9 +154,9 @@
     - aap_deploy_mode == 'local'
     - aap_grant_service_account_source_access
 
-- name: "aap_config | Grant service account read/traverse access to apps tree"
+- name: "aap_config | Grant service account read/traverse access to destination-automation project"
   ansible.builtin.command:
-    cmd: "setfacl -m u:{{ aap_machine_credential_username }}:rx {{ aap_source_access_home_dir }}/apps {{ aap_destination_automation_base_dir }}"
+    cmd: "setfacl -m u:{{ aap_machine_credential_username }}:rx {{ aap_destination_automation_base_dir }}"
   become: true
   changed_when: true
   when:
@@ -234,3 +234,6 @@
       - "Configured AAP project: {{ aap_project_name }} (mode={{ aap_deploy_mode }})"
       - "Configured AAP inventory: {{ aap_inventory_name }}"
       - "Configured users: {{ aap_instructor_username }} (admin), {{ aap_participant_usernames | length }} participant user(s)"
+      - ""
+      - "⚠️  IMPORTANT: User credentials written to {{ aap_password_store_dir }}"
+      - "Store them securely, then delete them from this location"
