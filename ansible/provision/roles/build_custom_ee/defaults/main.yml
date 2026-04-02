@@ -1,7 +1,7 @@
 ---
 # build_custom_ee role defaults
 
-# Podman EE naming
+# Primary Podman EE naming (local Hub ee-supported-rhel9 base)
 ee_image_name: "destination-automation-podman-ee"
 ee_image_tag: "latest"
 
@@ -18,7 +18,13 @@ ee_registry_host: >-
   }}
 ee_registry_validate_certs: "{{ (lookup('ansible.builtin.env', 'EE_REGISTRY_VALIDATE_CERTS') | default('false', true)) | bool }}"
 
-# Podman EE base image - creator-ee includes containers.podman out of the box
+# Community Podman EE naming (creator-ee base)
+ee_podman_community_image_name: "destination-automation-podman-community-ee"
+ee_podman_community_image_tag: "latest"
+ee_podman_community_output_image: "localhost/{{ ee_podman_community_image_name }}:{{ ee_podman_community_image_tag }}"
+ee_podman_community_registry_image: "{{ ee_registry_host }}/{{ ee_podman_community_image_name }}:{{ ee_podman_community_image_tag }}"
+
+# Community Podman EE base image - creator-ee includes containers.podman out of the box
 ee_base_image: "quay.io/ansible/creator-ee:latest"
 ee_package_manager_path: "/usr/bin/microdnf"
 
@@ -41,12 +47,12 @@ ee_oneagent_base_image: >-
 ee_oneagent_package_manager_path: "/usr/bin/dnf"
 ee_oneagent_registry_image: "{{ ee_registry_host }}/{{ ee_oneagent_image_name }}:{{ ee_oneagent_image_tag }}"
 
-# Local-registry Podman EE trial profile
+# Primary local-registry Podman EE base image
 # Default pulls ee-supported-rhel9:latest from the local Automation Hub registry.
 # If pulling direct from Red Hat registry instead, use the :2.0 tag — that is the
 # version tested with this role:
 #   export EE_LOCAL_PODMAN_BASE_IMAGE="registry.redhat.io/ansible-automation-platform-25/ee-supported-rhel9:2.0"
-ee_local_podman_image_name: "destination-automation-podman-local-base-ee"
+ee_local_podman_image_name: "{{ ee_image_name }}"
 ee_local_podman_image_tag: "latest"
 ee_local_podman_output_image: "localhost/{{ ee_local_podman_image_name }}:{{ ee_local_podman_image_tag }}"
 ee_local_podman_base_image: >-
@@ -69,13 +75,23 @@ ee_oneagent_collection_version: "1.2.5"
 
 ee_build_profiles:
   - key: "podman"
-    name: "{{ ee_image_name }}"
-    description: "Custom EE with containers.podman collection (creator-ee base)"
-    output_image: "{{ ee_output_image }}"
-    registry_image: "{{ ee_registry_image }}"
-    base_image: "{{ ee_base_image }}"
-    package_manager_path: "{{ ee_package_manager_path }}"
-    collections: []
+    name: "{{ ee_local_podman_image_name }}"
+    description: "Custom EE with containers.podman collection (local Hub ee-supported-rhel9 base)"
+    output_image: "{{ ee_local_podman_output_image }}"
+    registry_image: "{{ ee_local_podman_registry_image }}"
+    base_image: "{{ ee_local_podman_base_image }}"
+    package_manager_path: "{{ ee_local_podman_package_manager_path }}"
+    # ee-supported-rhel9 carries additional preinstalled collections whose
+    # transitive dependencies still get introspected during the build, so this
+    # profile needs the same native package bootstrap as the oneagent profile.
+    additional_build_steps:
+      prepend_builder:
+        - RUN /usr/bin/microdnf install -y dnf systemd-devel libxml2-devel && /usr/bin/microdnf clean all
+      prepend_final:
+        - RUN /usr/bin/microdnf install -y dnf gcc krb5-devel libssh-devel python3-Cython python3.12-devel systemd-devel libxml2-devel && ln -sf /usr/bin/python3.12 /usr/bin/python3 && /usr/bin/microdnf clean all
+    collections:
+      - name: "containers.podman"
+        version: "{{ ee_podman_collection_version }}"
   - key: "oneagent"
     name: "{{ ee_oneagent_image_name }}"
     description: "Custom EE with dynatrace.oneagent collection (ee-supported-rhel9 base)"
@@ -95,21 +111,11 @@ ee_build_profiles:
     collections:
       - name: "dynatrace.oneagent"
         version: "{{ ee_oneagent_collection_version }}"
-  - key: "podman_local_base"
-    name: "{{ ee_local_podman_image_name }}"
-    description: "Custom EE with containers.podman collection (local Hub ee-supported-rhel9 base)"
-    output_image: "{{ ee_local_podman_output_image }}"
-    registry_image: "{{ ee_local_podman_registry_image }}"
-    base_image: "{{ ee_local_podman_base_image }}"
-    package_manager_path: "{{ ee_local_podman_package_manager_path }}"
-    # ee-supported-rhel9 carries additional preinstalled collections whose
-    # transitive dependencies still get introspected during the build, so this
-    # profile needs the same native package bootstrap as the oneagent profile.
-    additional_build_steps:
-      prepend_builder:
-        - RUN /usr/bin/microdnf install -y dnf systemd-devel libxml2-devel && /usr/bin/microdnf clean all
-      prepend_final:
-        - RUN /usr/bin/microdnf install -y dnf gcc krb5-devel libssh-devel python3-Cython python3.12-devel systemd-devel libxml2-devel && ln -sf /usr/bin/python3.12 /usr/bin/python3 && /usr/bin/microdnf clean all
-    collections:
-      - name: "containers.podman"
-        version: "{{ ee_podman_collection_version }}"
+  - key: "podman_community"
+    name: "{{ ee_podman_community_image_name }}"
+    description: "Custom EE with containers.podman collection (creator-ee base)"
+    output_image: "{{ ee_podman_community_output_image }}"
+    registry_image: "{{ ee_podman_community_registry_image }}"
+    base_image: "{{ ee_base_image }}"
+    package_manager_path: "{{ ee_package_manager_path }}"
+    collections: []
