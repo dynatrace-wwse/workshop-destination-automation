@@ -91,6 +91,31 @@
   ansible.builtin.set_fact:
     de_build_profile_summaries: []
 
+- name: "build_custom_de | Preflight base image availability for all profiles"
+  ansible.builtin.shell: |
+    set -e
+    podman image exists {{ de_profile.base_image | quote }} || podman pull {{ de_profile.base_image | quote }}
+  args:
+    executable: /bin/bash
+  loop: "{{ de_build_profiles }}"
+  loop_control:
+    loop_var: de_profile
+    label: "{{ de_profile.name }} -> {{ de_profile.base_image }}"
+  register: de_base_image_preflight
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: "build_custom_de | Fail early when a profile base image is not available"
+  ansible.builtin.fail:
+    msg: >-
+      Base image preflight failed for profile {{ item.de_profile.name }}.
+      Could not use image '{{ item.de_profile.base_image }}'.
+      Ensure the image exists in the configured registry and that podman authentication is valid.
+      Command output: {{ (item.stderr | default(item.stdout, true)) | trim }}
+  loop: "{{ de_base_image_preflight.results | default([]) }}"
+  when: item.rc | default(0) != 0
+
 - name: "build_custom_de | Build decision environment profiles"
   ansible.builtin.include_tasks: build_profile.yml
   loop: "{{ de_build_profiles }}"

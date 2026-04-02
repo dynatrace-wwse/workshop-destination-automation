@@ -12,7 +12,10 @@ de_output_image: "localhost/{{ de_image_name }}:{{ de_image_tag }}"
 de_registry_host: >-
   {{
     lookup('ansible.builtin.env', 'DE_REGISTRY_HOST')
-    | default(lookup('ansible.builtin.env', 'EE_REGISTRY_HOST') | default(lookup('ansible.builtin.env', 'AAP_PRIVATE_HOSTNAME') | default(lookup('ansible.builtin.env', 'AAP_PUBLIC_HOSTNAME') | default('localhost', true), true), true), true)
+    | default(lookup('ansible.builtin.env', 'EE_REGISTRY_HOST'), true)
+    | default(ansible_fqdn, true)
+    | default(ansible_hostname, true)
+    | default('localhost', true)
   }}
 de_registry_validate_certs: "{{ (lookup('ansible.builtin.env', 'DE_REGISTRY_VALIDATE_CERTS') | default('false', true)) | bool }}"
 
