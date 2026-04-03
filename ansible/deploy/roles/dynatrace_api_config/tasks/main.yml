@@ -103,7 +103,9 @@
         value:
           allowedOutboundConnections:
             enforced: false
-            hostList: []
+            hostList:
+              - "{{ ansible_fqdn }}"
+              - "host.containers.internal"
     status_code: 200
   register: _js_outbound_post_result
   when: _js_outbound_existing | length == 0
@@ -127,14 +129,20 @@
       {{
         _js_outbound_existing[0].value.allowedOutboundConnections.enforced
         if (_js_outbound_existing | length) > 0
-        else false
+        else (_js_outbound_post_result.json[0].value.allowedOutboundConnections.enforced | default(false))
       }}
     _js_outbound_host_list: >-
       {{
         _js_outbound_existing[0].value.allowedOutboundConnections.hostList
         if (_js_outbound_existing | length) > 0
-        else []
+        else (_js_outbound_post_result.json[0].value.allowedOutboundConnections.hostList | default([ansible_fqdn, 'host.containers.internal']))
       }}
+
+- name: "dynatrace_api_config | Build required JS outbound allowlist hosts"
+  ansible.builtin.set_fact:
+    _js_outbound_required_hosts:
+      - "{{ ansible_fqdn }}"
+      - "host.containers.internal"
 
 - name: "dynatrace_api_config | Display current JS outbound connections setting"
   ansible.builtin.debug:
@@ -149,19 +157,23 @@
       No changes required.
   when: not _js_outbound_enforced
 
-- name: "dynatrace_api_config | No changes required — {{ ansible_fqdn }} already in allowlist"
+- name: "dynatrace_api_config | No changes required — required hosts already in allowlist"
   ansible.builtin.debug:
     msg: >-
-      {{ ansible_fqdn }} is already present in the JS runtime outbound connections allowlist.
+      {{ _js_outbound_required_hosts }} are already present in the JS runtime outbound connections allowlist.
       No changes required.
-  when: _js_outbound_enforced and ansible_fqdn in _js_outbound_host_list
+  when:
+    - _js_outbound_enforced
+    - (_js_outbound_required_hosts | difference(_js_outbound_host_list)) | length == 0
 
-- name: "dynatrace_api_config | Build updated hostList including {{ ansible_fqdn }}"
+- name: "dynatrace_api_config | Build updated hostList including required hosts"
   ansible.builtin.set_fact:
-    _js_outbound_new_host_list: "{{ _js_outbound_host_list + [ansible_fqdn] }}"
-  when: _js_outbound_enforced and ansible_fqdn not in _js_outbound_host_list
+    _js_outbound_new_host_list: "{{ (_js_outbound_host_list + _js_outbound_required_hosts) | unique | list }}"
+  when:
+    - _js_outbound_enforced
+    - (_js_outbound_required_hosts | difference(_js_outbound_host_list)) | length > 0
 
-- name: "dynatrace_api_config | Add {{ ansible_fqdn }} to JS outbound connections allowlist"
+- name: "dynatrace_api_config | Add required hosts to JS outbound connections allowlist"
   ansible.builtin.uri:
     url: >-
       {{ dynatrace_api_config_settings_api_base_url }}/{{ _js_outbound_object_id }}
@@ -178,14 +190,18 @@
           hostList: "{{ _js_outbound_new_host_list }}"
     status_code: 200
   register: _js_outbound_put_result
-  when: _js_outbound_enforced and ansible_fqdn not in _js_outbound_host_list
+  when:
+    - _js_outbound_enforced
+    - (_js_outbound_required_hosts | difference(_js_outbound_host_list)) | length > 0
 
 - name: "dynatrace_api_config | Display JS outbound connections update result"
   ansible.builtin.debug:
     msg: >-
-      Added {{ ansible_fqdn }} to the JS runtime outbound connections allowlist.
+      Added required hosts {{ _js_outbound_required_hosts }} to the JS runtime outbound connections allowlist.
       Updated hostList: {{ _js_outbound_new_host_list }}
-  when: _js_outbound_enforced and ansible_fqdn not in _js_outbound_host_list
+  when:
+    - _js_outbound_enforced
+    - (_js_outbound_required_hosts | difference(_js_outbound_host_list)) | length > 0
 
 # ============================================================
 # app:dynatrace.redhat.ansible:eda-webhook.connection
