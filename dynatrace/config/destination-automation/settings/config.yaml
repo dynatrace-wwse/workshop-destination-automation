@@ -206,6 +206,15 @@ configs:
         schema: builtin:openpipeline.logs.routing
         schemaVersion: "1.55"
         scope: environment
+  - id: appsec-runtime-vulnerability-detection
+    config:
+      template: appsec-runtime-vulnerability-detection.json
+      skip: false
+    type:
+      settings:
+        schema: builtin:appsec.runtime-vulnerability-detection
+        schemaVersion: "3.12.1"
+        scope: environment
   - id: service-detection-full-web-request-ai-travel-advisor
     config:
       template: service-detection-full-web-request-ai-travel-advisor.json

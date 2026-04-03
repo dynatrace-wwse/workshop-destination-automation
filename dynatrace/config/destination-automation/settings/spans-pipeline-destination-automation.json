@@ -1,7 +1,7 @@
 {
   "metadataList": [],
   "customId": "pipeline_destination-automation_5356",
-  "displayName": "destination-automation",
+  "displayName": "destination-automation-spans",
   "processing": {
     "processors": [
       {
