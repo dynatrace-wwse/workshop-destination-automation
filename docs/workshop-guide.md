@@ -6,240 +6,186 @@ This workshop demonstrates a production-style workflow using:
 
 - **Red Hat Ansible Automation Platform (AAP)** — automated build, deploy, and lifecycle management
 - **Dynatrace** — full-stack observability and AI-powered monitoring
-- **AI Inference API** — a containerized AI workload (FastAPI + inference models)
-- **Podman** — daemonless container runtime for building and running images
+- **AI Travel Advisor App** — a containerized AI workload (FastAPI + inference models)
 
 ---
 
 ## Architecture
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                    Ansible Automation Platform                 │
-│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────┐   │
-│  │build_images  │  │ deploy_app   │  │configure_dynatrace │   │
-│  │  .yml        │  │  .yml        │  │  .yml              │   │
-│  └──────┬───────┘  └──────┬───────┘  └─────────┬──────────┘   │
-│         │                 │                    │               │
-│         ▼                 ▼                    ▼               │
-│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────┐   │
-│  │podman_build  │  │podman_deploy │  │dynatrace_configure │   │
-│  │   role       │  │   role       │  │   role             │   │
-│  └──────┬───────┘  └──────┬───────┘  └─────────┬──────────┘   │
-└─────────┼─────────────────┼──────────────────── ┼─────────────┘
-          │                 │                     │
-          ▼                 ▼                     ▼
-   ┌──────────────┐  ┌──────────────┐    ┌───────────────┐
-   │  Podman      │  │  Container   │    │  Dynatrace    │
-   │  Build       │  │  Runtime     │    │  Tenant       │
-   └──────────────┘  └──────┬───────┘    └───────────────┘
-                             │
-                             ▼
-                    ┌────────────────────┐
-                    │  AI Inference API  │
-                    │  :8080             │
-                    │  /health           │
-                    │  /metrics          │
-                    │  /api/v1/predict   │
-                    └────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                 Ansible Automation Platform (Controller + EDA)             │
+│                                                                             │
+│  Provisioning                 Platform Config            Dynatrace Config   │
+│  ┌──────────────────────┐     ┌──────────────────────┐   ┌───────────────┐ │
+│  │ install_aap_         │     │ configure_aap.yml    │   │ deploy_       │ │
+│  │ containerized.yml    │     │ configure_eda.yml    │   │ dynatrace_*.yml│ │
+│  └──────────┬───────────┘     └──────────┬───────────┘   └───────┬───────┘ │
+│             │                            │                       │         │
+│             ▼                            ▼                       ▼         │
+│  ┌──────────────────────┐     ┌──────────────────────┐   ┌───────────────┐ │
+│  │ build_custom_ee.yml  │     │ JT/Creds/Inventory   │   │ Monaco +      │ │
+│  │ build_custom_de.yml  │     │ Domains + EDA objs   │   │ Settings API  │ │
+│  └──────────┬───────────┘     └──────────┬───────────┘   └───────┬───────┘ │
+└─────────────┼────────────────────────────┼────────────────────────┼─────────┘
+          │                            │                        │
+          ▼                            ▼                        ▼
+  ┌──────────────────────┐     ┌──────────────────────┐   ┌──────────────────┐
+  │ Workshop Host        │     │ AAP Job Templates    │   │ Dynatrace Tenant │
+  │ (aap-service-account │     │ workflow-deploy-app  │   │ Apps + Settings  │
+  │  rootless Podman)    │     │ + deploy roles       │   │ + OneAgent +     │
+  └──────────┬───────────┘     └──────────┬───────────┘   │ EdgeConnect      │
+          │                            │               └──────────────────┘
+          ▼                            ▼
+  ┌──────────────────────┐     ┌──────────────────────┐
+  │ easyTravel AI stack  │◄────│ EDA webhook +        │
+  │ (public :81)         │     │ automation triggers   │
+  │ travel-advisor :8080 │     └──────────────────────┘
+  └──────────────────────┘
 ```
 
 ---
 
-## Prerequisites
+## Setup
 
-| Requirement | Version | Notes |
-|---|---|---|
-| RHEL / Rocky Linux | 9.x | Host OS |
-| Podman | 4.x+ | `dnf install podman` |
-| Python | 3.11+ | For app development |
-| Ansible | 2.15+ | `dnf install ansible-core` |
-| Ansible Automation Platform | 2.4+ | Optional - can use `ansible-playbook` directly |
-| Dynatrace tenant | SaaS or Managed | For monitoring |
-
----
-
-## Quick Start
-
-### 1. Clone the repository
+### Clone the repository
 
 ```bash
+cd ~
 git clone https://github.com/dynatrace-wwse/workshop-destination-automation.git
-cd workshop-destination-automation
 ```
 
-### 2. Install Ansible collections
+#### Install packages
+```
+sudo dnf update -y
+sudo dnf install -y ansible-core
+sudo dnf install -y wget git-core rsync vim nano
+sudo dnf install -y podman
+sudo dnf install -y python3-pip
+```
 
-```bash
-cd ansible
+**Reboot** (recommended, not required):
+```
+sudo reboot
+```
+
+## AAP Provisioning
+
+### Download AAP install tarball
+```
+mkdir ~/redhat
+cd ~/redhat
+wget -O ansible-automation-platform-setup-bundle.tar.gz "<your-url-here>"
+```
+
+### Create ansible directory
+```
+export CURRENT_USER=$(whoami)
+sudo mkdir /opt/ansible
+sudo chown $CURRENT_USER:$CURRENT_USER /opt/ansible
+```
+
+### Prepare for AAP install
+```
+cd ~/workshop-destination-automation/ansible
+export AAP_PUBLIC_HOSTNAME="<your-public-fqdn-here>"
+export AAP_INSTALLER_LOCAL_PATH="$HOME/redhat/ansible-automation-platform-setup-bundle.tar.gz"
+export AAP_ADMIN_PASSWORD="<your-strong-password-here>"
+```
+
+### Install ansible-galaxy collections
+```
+mkdir -p ~/.ansible/collections
 ansible-galaxy collection install -r requirements.yml
 ```
 
-### 3. Build the container image
-
-```bash
-ansible-playbook playbooks/build_images.yml
+### Run the installation playbook
+```
+ansible-playbook provision/playbooks/install_aap_containerized.yml
 ```
 
-### 4. Deploy the application
+### Apply your subscription license via the AAP web interface
 
-```bash
-ansible-playbook playbooks/deploy_app.yml
+### Build images for execution environment and decision environment
+```
+ ansible-playbook provision/playbooks/build_custom_ee.yml
+ ```
+
+ ```
+ ansible-playbook provision/playbooks/build_custom_de.yml
+ ```
+
+## AAP Deployment
+
+### Create AAP Service Account user
+Steps documented in deploy/docs/aap-service-account-setup.md
+
+### Deploy AAP Config Objects
+```
+ansible-playbook deploy/playbooks/configure_aap.yml
 ```
 
-### 5. Verify deployment
-
-```bash
-curl http://localhost:8080/health
-curl http://localhost:8080/api/v1/models
-curl -X POST http://localhost:8080/api/v1/predict \
-  -H "Content-Type: application/json" \
-  -d '{"model":"text-summarizer-v1","input_text":"Ansible automates IT tasks."}'
+### Deploy EDA Config Objects
+```
+ansible-playbook deploy/playbooks/configure_eda.yml
 ```
 
-### 6. Configure Dynatrace monitoring (requires Dynatrace tenant)
+### Apply Credentials via UI
+- [ ] aap-service-account
+- [ ] destination-automation-dynatrace-monaco
+- [ ] destination-automation-dynatrace-oauth
+- [ ] destination-automation-dynatrace-oneagent
+- [ ] destination-automation-dynatrace-otlp 
 
-```bash
-ansible-playbook playbooks/configure_dynatrace.yml \
-  -e "dynatrace_api_url=https://<env-id>.live.dynatrace.com" \
-  -e "dynatrace_api_token=<your-api-token>"
-```
+### Create Job Template Domains (optional, recommended)
+AAP Web UI -> Automation Execution (Automation Controller) -> Templates: Configure Domains (wrench icon)
 
-### 7. Run the full site playbook
+- Name: Dynatrace
+  - Labels: dynatrace
+- Name: App
+  - Labels: app
 
-```bash
-ansible-playbook playbooks/site.yml \
-  -e "dynatrace_api_url=https://<env-id>.live.dynatrace.com" \
-  -e "dynatrace_api_token=<your-api-token>"
-```
+## Dynatrace Deployment
 
----
+### Deploy Dynatrace Apps
+destination-automation-deploy-dynatrace-apps
 
-## Application Endpoints
+### Deploy Dynatrace API Config
+destination-automation-deploy-dynatrace-api-config
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/health` | GET | Health check (used by Ansible & Dynatrace synthetic monitor) |
-| `/metrics` | GET | Prometheus metrics (scraped by Dynatrace) |
-| `/api/v1/models` | GET | List available inference models |
-| `/api/v1/models/{name}` | GET | Get model details |
-| `/api/v1/predict` | POST | Run AI inference |
-| `/api/v1/stats` | GET | Application statistics |
-| `/docs` | GET | OpenAPI documentation (Swagger UI) |
+### Deploy EdgeConnect
+Use when running AAP & EDA on the workshop host that isn't publicly accessible
+destination-automation-deploy-dynatrace-edgeconnect
 
----
+### Deploy Monaco Project
+destination-automation-deploy-dynatrace-monaco
 
-## Ansible Playbooks
+### Configure OpenPipeline Routing Tables (Manually)
+OpenPipeline routing tables are comprehensive for the environment.  If existing rules exist in the routing table, applying a new configuration with Monaco will delete/overwrite the existing rules.  To avoid this behavior, for now, routing table rules need to be created manually.
 
-| Playbook | Description |
-|---|---|
-| `site.yml` | Full orchestration: build + deploy + configure monitoring |
-| `build_images.yml` | Build the container image with Podman |
-| `deploy_app.yml` | Deploy the container and verify health |
-| `stop_app.yml` | Gracefully stop and remove the container |
-| `configure_dynatrace.yml` | Set up Dynatrace monitoring resources |
+Logs:
+- Name: destination-automation-logs
+- Matching Condition: matchesValue(dt.host_group.id,"destination-automation")
+- Pipeline: destination-automation-logs
 
-### Useful variables (override with `-e`)
+Spans:
+- Name: destination-automation-spans
+- Matching Condition: matchesValue(dt.host_group.id,"destination-automation")
+- Pipeline: destination-automation-spans
 
-| Variable | Default | Description |
-|---|---|---|
-| `image_tag` | `1.0.0` | Container image tag |
-| `host_port` | `8080` | Host port mapping |
-| `app_environment` | `workshop` | Environment label |
-| `dynatrace_api_url` | `""` | Dynatrace environment URL |
-| `dynatrace_api_token` | `""` | Dynatrace API token |
-| `remove_image` | `false` | Remove image when stopping |
+BizEvents:
+- Name: destination-automation-bizevents
+- Matching Condition: matchesValue(dt.host_group.id,"destination-automation")
+- Pipeline: destination-automation-bizevents
 
----
+### Deploy OneAgent
+desetination-automation-deploy-dynatrace-oneagent
 
-## Ansible Automation Platform (AAP) Setup
+Optionally remove sudo permissions from aap-service-account after successful installation
 
-To run these playbooks from AAP:
+## Deploy App (easyTravel AI Travel Advisor Stack)
 
-1. **Create a Project** pointing to this repository
-2. **Create an Inventory** using `ansible/inventories/localhost/hosts.yml`
-3. **Create Credentials**:
-   - Machine credential (for localhost)
-   - Custom credential type for Dynatrace (`DYNATRACE_API_URL`, `DYNATRACE_API_TOKEN`)
-4. **Create Job Templates** for each playbook
-5. **Create a Workflow** linking build → deploy → configure
+### Build Images and Deploy App
+destination-automation-workflow-deploy-app-clean
 
----
-
-## Dynatrace Integration
-
-### Metrics Exposed
-
-The app exposes Prometheus metrics at `/metrics`. Configure Dynatrace to scrape:
-
-- `ai_inference_requests_total` — total requests by model and status
-- `ai_inference_request_duration_seconds` — latency histogram
-- `ai_inference_active_requests` — concurrent requests gauge
-- `ai_inference_model_load_seconds` — model load time
-
-### Custom Dashboard
-
-Import the dashboard from `dynatrace/dashboards/ai-inference-dashboard.json` in your Dynatrace tenant:
-
-1. Go to **Dashboards** → **Import dashboard**
-2. Upload `dynatrace/dashboards/ai-inference-dashboard.json`
-
-### API Token Permissions Required
-
-| Permission | Purpose |
-|---|---|
-| `metrics.ingest` | Push custom metrics |
-| `entities.write` | Tag monitored entities |
-| `syntheticExecutions.write` | Create synthetic monitors |
-| `ReadConfig` | Read configuration |
-| `WriteConfig` | Create management zones |
-
----
-
-## Stopping the Application
-
-```bash
-# Stop container only
-ansible-playbook playbooks/stop_app.yml
-
-# Stop container and remove image
-ansible-playbook playbooks/stop_app.yml -e "remove_image=true"
-```
-
----
-
-## Project Structure
-
-```
-workshop-destination-automation/
-├── README.md                          # Project overview
-├── app/                               # AI Inference API source code
-│   ├── Containerfile                  # Podman/Docker build definition
-│   ├── requirements.txt               # Python dependencies
-│   └── src/
-│       ├── main.py                    # FastAPI application entry point
-│       ├── config.py                  # Configuration (env vars)
-│       └── models.py                  # Pydantic request/response models
-├── ansible/                           # Ansible project
-│   ├── ansible.cfg                    # Ansible configuration
-│   ├── requirements.yml               # Collection dependencies
-│   ├── inventories/
-│   │   └── localhost/
-│   │       ├── hosts.yml              # Inventory
-│   │       └── group_vars/all.yml     # Shared variables
-│   ├── playbooks/
-│   │   ├── site.yml                   # Full orchestration playbook
-│   │   ├── build_images.yml           # Build container image
-│   │   ├── deploy_app.yml             # Deploy container
-│   │   ├── stop_app.yml               # Stop and remove container
-│   │   └── configure_dynatrace.yml    # Dynatrace monitoring setup
-│   └── roles/
-│       ├── podman_build/              # Podman image build role
-│       ├── podman_deploy/             # Podman container deploy role
-│       └── dynatrace_configure/       # Dynatrace configuration role
-├── dynatrace/
-│   └── dashboards/
-│       └── ai-inference-dashboard.json  # Dynatrace dashboard definition
-└── docs/
-    └── workshop-guide.md              # This guide
-```
+The application is now reachable at the public hostname on http port 81
