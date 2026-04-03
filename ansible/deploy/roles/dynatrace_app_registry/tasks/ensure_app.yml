@@ -34,21 +34,118 @@
     validate_certs: "{{ dynatrace_app_registry_validate_certs }}"
     status_code: 200
   register: _dt_app_poll_result
-  until: _dt_app_poll_result.json.state | default('') in ['RUNNING', 'FAILED']
+  vars:
+    # Per Dynatrace App Registry docs, resourceStatus.status is the authoritative app lifecycle state.
+    _dt_app_success_states:
+      - OK
+    _dt_app_failed_states:
+      - DEACTIVATED
+      - ERROR
+    _dt_app_transient_states:
+      - ''
+      - PENDING
+      - PENDING_DELETION
+    # Dynatrace app status can be exposed through different keys depending on API/version.
+    _dt_app_poll_state_primary: >-
+      {{
+        (
+          _dt_app_poll_result.json.resourceStatus.status
+          | default(_dt_app_poll_result.json.state, true)
+          | default(_dt_app_poll_result.json.status, true)
+          | default(_dt_app_poll_result.json.installationState, true)
+          | default(_dt_app_poll_result.json.lifecycleState, true)
+          | default('', true)
+        )
+        | upper
+      }}
+    _dt_app_pending_operation: >-
+      {{ _dt_app_poll_result.json.resourceStatus.pendingOperation | default('', true) | upper }}
+    _dt_app_poll_state_nested: >-
+      {{
+        (
+          _dt_app_poll_result.json.currentVersion.state
+          | default(_dt_app_poll_result.json.currentVersion.resourceStatus.status, true)
+          | default(_dt_app_poll_result.json.latestVersion.state, true)
+          | default(_dt_app_poll_result.json.latestVersion.resourceStatus.status, true)
+          | default((_dt_app_poll_result.json.versions | default([]) | first).state, true)
+          | default((_dt_app_poll_result.json.versions | default([]) | first).resourceStatus.status, true)
+          | default('', true)
+        )
+        | upper
+      }}
+    _dt_app_poll_states: >-
+      {{ [_dt_app_poll_state_primary, _dt_app_poll_state_nested] | reject('equalto', '') | list }}
+    _dt_app_has_installed_flag: >-
+      {{
+        (_dt_app_poll_result.json.installed | default(false))
+        or (_dt_app_poll_result.json.isInstalled | default(false))
+        or (_dt_app_poll_result.json.active | default(false))
+      }}
+    _dt_app_has_failure_state: >-
+      {{ (_dt_app_poll_states | intersect(_dt_app_failed_states) | length) > 0 }}
+    _dt_app_has_success_state: >-
+      {{
+        (
+          (_dt_app_poll_states | intersect(_dt_app_success_states) | length) > 0
+          and _dt_app_pending_operation not in ['INSTALL', 'UPDATE', 'DELETE']
+        )
+        or _dt_app_has_installed_flag
+        or (
+          (_dt_app_poll_states | length > 0)
+          and ((_dt_app_poll_states | difference(_dt_app_transient_states) | length) > 0)
+          and (not _dt_app_has_failure_state)
+        )
+      }}
+  until: _dt_app_has_success_state or _dt_app_has_failure_state
   retries: "{{ dynatrace_app_registry_poll_retries }}"
   delay: "{{ dynatrace_app_registry_poll_delay }}"
   when: >-
     not _dt_app_already_running and
     not (_dt_app_install_result.failed | default(false))
 
+- name: "dynatrace_app_registry | Persist {{ _dt_app_id }} installation status facts"
+  ansible.builtin.set_fact:
+    _dt_app_effective_status: >-
+      {{
+        (
+          _dt_app_poll_result.json.resourceStatus.status
+          | default(_dt_app_poll_result.json.state, true)
+          | default(_dt_app_poll_result.json.status, true)
+          | default(_dt_app_poll_result.json.installationState, true)
+          | default(_dt_app_poll_result.json.lifecycleState, true)
+          | default('unknown', true)
+        )
+        | upper
+      }}
+    _dt_app_pending_operation_effective: >-
+      {{ _dt_app_poll_result.json.resourceStatus.pendingOperation | default('none', true) | upper }}
+    _dt_app_has_failure_state: >-
+      {{
+        (
+          _dt_app_poll_result.json.resourceStatus.status
+          | default(_dt_app_poll_result.json.state, true)
+          | default(_dt_app_poll_result.json.status, true)
+          | default(_dt_app_poll_result.json.installationState, true)
+          | default(_dt_app_poll_result.json.lifecycleState, true)
+          | default('', true)
+          | upper
+        ) in ['DEACTIVATED', 'ERROR']
+      }}
+  when: >-
+    not _dt_app_already_running and
+    not (_dt_app_install_result.failed | default(false))
+
 - name: "dynatrace_app_registry | Fail if {{ _dt_app_id }} installation failed at platform"
   ansible.builtin.fail:
-    msg: "App {{ _dt_app_id }} installation failed. State: {{ _dt_app_poll_result.json.state | default('unknown') }}"
+    msg: >-
+      App {{ _dt_app_id }} installation failed.
+      State: {{ _dt_app_effective_status | default('unknown') }}
+      Pending operation: {{ _dt_app_pending_operation_effective | default('NONE') }}
   ignore_errors: true
   when: >-
     not _dt_app_already_running and
     not (_dt_app_install_result.failed | default(false)) and
-    (_dt_app_poll_result.json.state | default('')) == 'FAILED'
+    (_dt_app_has_failure_state | default(false))
 
 - name: "dynatrace_app_registry | Display {{ _dt_app_id }} install result"
   ansible.builtin.debug:
@@ -56,5 +153,5 @@
       App {{ _dt_app_id }}:
       {% if _dt_app_already_running %}already installed (state={{ _dt_app_check_result.json.state | default('unknown') }}, skipped)
       {% elif _dt_app_install_result.failed | default(false) %}install request failed (see error above)
-      {% elif (_dt_app_poll_result.json.state | default('')) == 'FAILED' %}installation failed at platform (see error above)
+      {% elif _dt_app_has_failure_state | default(false) %}installation failed at platform (see error above)
       {% else %}installed successfully{% endif %}
