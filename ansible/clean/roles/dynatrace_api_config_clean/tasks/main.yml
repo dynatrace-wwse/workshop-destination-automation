@@ -1,0 +1,191 @@
+---
+- name: "dynatrace_api_config_clean | Validate required platform credentials"
+  ansible.builtin.assert:
+    that:
+      - dynatrace_api_config_clean_platform_url | length > 0
+      - dynatrace_api_config_clean_platform_token | length > 0
+      - dynatrace_api_config_clean_platform_token != 'REPLACE_ME'
+    fail_msg: >-
+      DT_PLATFORM_URL and DT_PLATFORM_TOKEN must be set before running this role.
+      Ensure the Dynatrace Monaco credential is attached to this job template.
+
+- name: "dynatrace_api_config_clean | Build preferred and fallback Settings API URLs"
+  ansible.builtin.set_fact:
+    _settings_api_preferred_url: >-
+      {{
+        dynatrace_api_config_clean_platform_url | regex_replace('/$', '')
+      }}{{ dynatrace_api_config_clean_settings_api_preferred_path }}
+    _settings_api_fallback_url: >-
+      {{
+        dynatrace_api_config_clean_platform_url | regex_replace('/$', '')
+      }}{{ dynatrace_api_config_clean_settings_api_fallback_path }}
+
+- name: "dynatrace_api_config_clean | Probe preferred Settings API endpoint"
+  ansible.builtin.uri:
+    url: >-
+      {{ _settings_api_preferred_url }}?schemaIds={{ dynatrace_api_config_clean_settings_api_probe_schema }}
+    method: GET
+    headers:
+      Authorization: "Bearer {{ dynatrace_api_config_clean_platform_token }}"
+    validate_certs: "{{ dynatrace_api_config_clean_validate_certs }}"
+    return_content: true
+    status_code: [200, 400, 401, 403, 404]
+  register: _settings_api_preferred_probe
+
+- name: "dynatrace_api_config_clean | Probe fallback Settings API endpoint when preferred is unavailable"
+  ansible.builtin.uri:
+    url: >-
+      {{ _settings_api_fallback_url }}?schemaIds={{ dynatrace_api_config_clean_settings_api_probe_schema }}
+    method: GET
+    headers:
+      Authorization: "Bearer {{ dynatrace_api_config_clean_platform_token }}"
+    validate_certs: "{{ dynatrace_api_config_clean_validate_certs }}"
+    return_content: true
+    status_code: [200, 400, 401, 403, 404]
+  register: _settings_api_fallback_probe
+  when: _settings_api_preferred_probe.status != 200
+
+- name: "dynatrace_api_config_clean | Select active Settings API endpoint"
+  ansible.builtin.set_fact:
+    dynatrace_api_config_clean_settings_api_base_url: >-
+      {{
+        _settings_api_preferred_url
+        if _settings_api_preferred_probe.status == 200
+        else _settings_api_fallback_url
+      }}
+
+- name: "dynatrace_api_config_clean | Fail when neither Settings API endpoint is usable"
+  ansible.builtin.assert:
+    that:
+      - _settings_api_preferred_probe.status == 200 or ((_settings_api_fallback_probe.status | default(0) | int) == 200)
+    fail_msg: >-
+      Unable to access Dynatrace Settings API with either endpoint.
+      Preferred {{ _settings_api_preferred_url }} returned status {{ _settings_api_preferred_probe.status }}.
+      Fallback {{ _settings_api_fallback_url }} returned status {{ _settings_api_fallback_probe.status | default('not attempted') }}.
+
+- name: "dynatrace_api_config_clean | Get JS runtime outbound connections setting"
+  ansible.builtin.uri:
+    url: "{{ dynatrace_api_config_clean_settings_api_base_url }}?schemaIds=builtin:dt-javascript-runtime.allowed-outbound-connections"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ dynatrace_api_config_clean_platform_token }}"
+    validate_certs: "{{ dynatrace_api_config_clean_validate_certs }}"
+    status_code: 200
+  register: _js_outbound_get_result
+
+- name: "dynatrace_api_config_clean | Record existing JS runtime outbound setting objects"
+  ansible.builtin.set_fact:
+    _js_outbound_existing: "{{ _js_outbound_get_result.json['items'] | default([]) }}"
+
+- name: "dynatrace_api_config_clean | Set JS outbound current values"
+  ansible.builtin.set_fact:
+    _js_outbound_object_id: "{{ _js_outbound_existing[0].objectId }}"
+    _js_outbound_enforced: "{{ _js_outbound_existing[0].value.allowedOutboundConnections.enforced | default(false) }}"
+    _js_outbound_host_list: "{{ _js_outbound_existing[0].value.allowedOutboundConnections.hostList | default([]) }}"
+  when: _js_outbound_existing | length > 0
+
+- name: "dynatrace_api_config_clean | Build updated hostList removing workshop hosts"
+  ansible.builtin.set_fact:
+    _js_outbound_new_host_list: >-
+      {{
+        _js_outbound_host_list
+        | difference(dynatrace_api_config_clean_js_outbound_hosts_to_remove)
+      }}
+  when:
+    - _js_outbound_existing | length > 0
+    - _js_outbound_enforced
+
+- name: "dynatrace_api_config_clean | Remove workshop hosts from JS outbound allowlist"
+  ansible.builtin.uri:
+    url: >-
+      {{ dynatrace_api_config_clean_settings_api_base_url }}/{{ _js_outbound_object_id }}
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ dynatrace_api_config_clean_platform_token }}"
+      Content-Type: "application/json"
+    validate_certs: "{{ dynatrace_api_config_clean_validate_certs }}"
+    body_format: json
+    body:
+      value:
+        allowedOutboundConnections:
+          enforced: true
+          hostList: "{{ _js_outbound_new_host_list }}"
+    status_code: 200
+  when:
+    - _js_outbound_existing | length > 0
+    - _js_outbound_enforced
+    - (_js_outbound_host_list | difference(_js_outbound_new_host_list)) | length > 0
+
+- name: "dynatrace_api_config_clean | Get existing EDA webhook connection settings"
+  ansible.builtin.uri:
+    url: "{{ dynatrace_api_config_clean_settings_api_base_url }}?schemaIds=app:dynatrace.redhat.ansible:eda-webhook.connection"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ dynatrace_api_config_clean_platform_token }}"
+    validate_certs: "{{ dynatrace_api_config_clean_validate_certs }}"
+    status_code: 200
+  register: _eda_connection_get_result
+
+- name: "dynatrace_api_config_clean | Find EDA webhook connection object by name"
+  ansible.builtin.set_fact:
+    _eda_connection_existing: >-
+      {{
+        _eda_connection_get_result.json['items']
+        | selectattr('value.name', 'equalto', dynatrace_api_config_clean_eda_connection_name)
+        | list
+      }}
+
+- name: "dynatrace_api_config_clean | Delete EDA webhook connection settings object"
+  ansible.builtin.uri:
+    url: >-
+      {{ dynatrace_api_config_clean_settings_api_base_url }}/{{ item.objectId }}
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ dynatrace_api_config_clean_platform_token }}"
+    validate_certs: "{{ dynatrace_api_config_clean_validate_certs }}"
+    status_code: 200
+  loop: "{{ _eda_connection_existing }}"
+  loop_control:
+    label: "{{ item.objectId }}"
+
+- name: "dynatrace_api_config_clean | Get existing full web request service detection settings"
+  ansible.builtin.uri:
+    url: "{{ dynatrace_api_config_clean_settings_api_base_url }}?schemaIds=builtin:service-detection.full-web-request"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ dynatrace_api_config_clean_platform_token }}"
+    validate_certs: "{{ dynatrace_api_config_clean_validate_certs }}"
+    status_code: 200
+  register: _service_detection_get_result
+  when: dynatrace_api_config_clean_service_detection_enabled
+
+- name: "dynatrace_api_config_clean | Find service detection object by name"
+  ansible.builtin.set_fact:
+    _service_detection_existing: >-
+      {{
+        _service_detection_get_result.json['items']
+        | selectattr('value.name', 'equalto', dynatrace_api_config_clean_service_detection_name)
+        | list
+      }}
+  when: dynatrace_api_config_clean_service_detection_enabled
+
+- name: "dynatrace_api_config_clean | Delete service detection settings object"
+  ansible.builtin.uri:
+    url: >-
+      {{ dynatrace_api_config_clean_settings_api_base_url }}/{{ item.objectId }}
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ dynatrace_api_config_clean_platform_token }}"
+    validate_certs: "{{ dynatrace_api_config_clean_validate_certs }}"
+    status_code: 200
+  loop: "{{ _service_detection_existing | default([]) }}"
+  loop_control:
+    label: "{{ item.objectId }}"
+  when: dynatrace_api_config_clean_service_detection_enabled
+
+- name: "dynatrace_api_config_clean | Display cleanup summary"
+  ansible.builtin.debug:
+    msg:
+      - "Selected Settings API endpoint: {{ dynatrace_api_config_clean_settings_api_base_url }}"
+      - "EDA webhook connections removed: {{ _eda_connection_existing | length }}"
+      - "Service detection settings removed: {{ (_service_detection_existing | default([])) | length }}"

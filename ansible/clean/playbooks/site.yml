@@ -8,3 +8,7 @@
 
 - import_playbook: remove_app.yml
 - import_playbook: remove_image.yml
+- import_playbook: remove_dynatrace_edgeconnect.yml
+- import_playbook: remove_dynatrace_monaco.yml
+- import_playbook: remove_dynatrace_api_config.yml
+- import_playbook: remove_dynatrace_oneagent.yml

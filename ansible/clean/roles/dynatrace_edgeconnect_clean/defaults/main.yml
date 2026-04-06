@@ -1,0 +1,20 @@
+---
+# Dynatrace platform connection (injected by Monaco credential)
+dynatrace_edgeconnect_clean_platform_url: "{{ lookup('ansible.builtin.env', 'DT_PLATFORM_URL') | default('', true) }}"
+
+# OAuth credentials (injected by Dynatrace OAuth Client credential)
+dynatrace_edgeconnect_clean_oauth_client_id: "{{ lookup('ansible.builtin.env', 'DT_OAUTH_CLIENT_ID') | default('', true) }}"
+dynatrace_edgeconnect_clean_oauth_client_secret: "{{ lookup('ansible.builtin.env', 'DT_OAUTH_CLIENT_SECRET') | default('', true) }}"
+dynatrace_edgeconnect_clean_oauth_account_urn: "{{ lookup('ansible.builtin.env', 'DT_OAUTH_ACCOUNT_URN') | default('', true) }}"
+
+# OAuth token endpoint
+dynatrace_edgeconnect_clean_oauth_endpoint: "https://sso.dynatrace.com/sso/oauth2/token"
+
+# TLS certificate validation
+dynatrace_edgeconnect_clean_validate_certs: true
+
+# EdgeConnect identity and local runtime artifacts
+dynatrace_edgeconnect_clean_name: "destination-automation-edgeconnect"
+dynatrace_edgeconnect_clean_container_name: "edgeconnect"
+dynatrace_edgeconnect_clean_config_dir: "{{ destination_automation_base_dir | default('/home/aap-service-account/destination-automation', true) }}/edgeconnect"
+dynatrace_edgeconnect_clean_remove_config_dir: true

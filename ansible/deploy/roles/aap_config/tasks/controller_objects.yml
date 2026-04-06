@@ -791,6 +791,82 @@
     become_enabled: "{{ aap_deploy_dynatrace_edgeconnect_job_template_become_enabled }}"
     state: present
 
+- name: "aap_config | Create clean Dynatrace API config job template"
+  awx.awx.job_template:
+    controller_host: "{{ aap_controller_host_normalized }}"
+    controller_username: "{{ aap_controller_username }}"
+    controller_password: "{{ aap_controller_password }}"
+    validate_certs: "{{ aap_controller_validate_certs }}"
+    name: "{{ aap_clean_dynatrace_api_config_job_template_name }}"
+    description: "{{ aap_clean_dynatrace_api_config_job_template_description }}"
+    organization: "{{ aap_org_name }}"
+    project: "{{ aap_project_name }}"
+    inventory: "{{ aap_inventory_name }}"
+    playbook: "{{ aap_clean_dynatrace_api_config_job_template_playbook }}"
+    credentials: "{{ aap_clean_dynatrace_api_config_job_template_credentials }}"
+    execution_environment: "{{ aap_custom_ee_name }}"
+    labels: "{{ aap_dynatrace_clean_job_template_labels }}"
+    extra_vars: "{{ aap_clean_dynatrace_api_config_job_template_extra_vars }}"
+    become_enabled: "{{ aap_clean_dynatrace_api_config_job_template_become_enabled }}"
+    state: present
+
+- name: "aap_config | Create clean Dynatrace EdgeConnect job template"
+  awx.awx.job_template:
+    controller_host: "{{ aap_controller_host_normalized }}"
+    controller_username: "{{ aap_controller_username }}"
+    controller_password: "{{ aap_controller_password }}"
+    validate_certs: "{{ aap_controller_validate_certs }}"
+    name: "{{ aap_clean_dynatrace_edgeconnect_job_template_name }}"
+    description: "{{ aap_clean_dynatrace_edgeconnect_job_template_description }}"
+    organization: "{{ aap_org_name }}"
+    project: "{{ aap_project_name }}"
+    inventory: "{{ aap_inventory_name }}"
+    playbook: "{{ aap_clean_dynatrace_edgeconnect_job_template_playbook }}"
+    credentials: "{{ aap_clean_dynatrace_edgeconnect_job_template_credentials }}"
+    execution_environment: "{{ aap_custom_ee_name }}"
+    labels: "{{ aap_dynatrace_podman_clean_job_template_labels }}"
+    extra_vars: "{{ aap_clean_dynatrace_edgeconnect_job_template_extra_vars }}"
+    become_enabled: "{{ aap_clean_dynatrace_edgeconnect_job_template_become_enabled }}"
+    state: present
+
+- name: "aap_config | Create clean Dynatrace Monaco job template"
+  awx.awx.job_template:
+    controller_host: "{{ aap_controller_host_normalized }}"
+    controller_username: "{{ aap_controller_username }}"
+    controller_password: "{{ aap_controller_password }}"
+    validate_certs: "{{ aap_controller_validate_certs }}"
+    name: "{{ aap_clean_dynatrace_monaco_job_template_name }}"
+    description: "{{ aap_clean_dynatrace_monaco_job_template_description }}"
+    organization: "{{ aap_org_name }}"
+    project: "{{ aap_project_name }}"
+    inventory: "{{ aap_inventory_name }}"
+    playbook: "{{ aap_clean_dynatrace_monaco_job_template_playbook }}"
+    credentials: "{{ aap_clean_dynatrace_monaco_job_template_credentials }}"
+    execution_environment: "{{ aap_custom_ee_name }}"
+    labels: "{{ aap_dynatrace_clean_job_template_labels }}"
+    extra_vars: "{{ aap_clean_dynatrace_monaco_job_template_extra_vars }}"
+    become_enabled: "{{ aap_clean_dynatrace_monaco_job_template_become_enabled }}"
+    state: present
+
+- name: "aap_config | Create clean Dynatrace OneAgent job template"
+  awx.awx.job_template:
+    controller_host: "{{ aap_controller_host_normalized }}"
+    controller_username: "{{ aap_controller_username }}"
+    controller_password: "{{ aap_controller_password }}"
+    validate_certs: "{{ aap_controller_validate_certs }}"
+    name: "{{ aap_clean_dynatrace_oneagent_job_template_name }}"
+    description: "{{ aap_clean_dynatrace_oneagent_job_template_description }}"
+    organization: "{{ aap_org_name }}"
+    project: "{{ aap_project_name }}"
+    inventory: "{{ aap_inventory_name }}"
+    playbook: "{{ aap_clean_dynatrace_oneagent_job_template_playbook }}"
+    credentials: "{{ aap_clean_dynatrace_oneagent_job_template_credentials }}"
+    execution_environment: "{{ aap_oneagent_ee_name }}"
+    labels: "{{ aap_dynatrace_clean_job_template_labels }}"
+    extra_vars: "{{ aap_clean_dynatrace_oneagent_job_template_extra_vars }}"
+    become_enabled: "{{ aap_clean_dynatrace_oneagent_job_template_become_enabled }}"
+    state: present
+
 - name: "aap_config | Create operate start-app job template"
   awx.awx.job_template:
     controller_host: "{{ aap_controller_host_normalized }}"
@@ -1377,6 +1453,50 @@
     role: read
     state: present
 
+- name: "aap_config | Grant clean dynatrace api config job template read to participants team"
+  awx.awx.role:
+    controller_host: "{{ aap_controller_host_normalized }}"
+    controller_username: "{{ aap_controller_username }}"
+    controller_password: "{{ aap_controller_password }}"
+    validate_certs: "{{ aap_controller_validate_certs }}"
+    team: "{{ aap_participants_team_name }}"
+    job_template: "{{ aap_clean_dynatrace_api_config_job_template_name }}"
+    role: read
+    state: present
+
+- name: "aap_config | Grant clean dynatrace edgeconnect job template read to participants team"
+  awx.awx.role:
+    controller_host: "{{ aap_controller_host_normalized }}"
+    controller_username: "{{ aap_controller_username }}"
+    controller_password: "{{ aap_controller_password }}"
+    validate_certs: "{{ aap_controller_validate_certs }}"
+    team: "{{ aap_participants_team_name }}"
+    job_template: "{{ aap_clean_dynatrace_edgeconnect_job_template_name }}"
+    role: read
+    state: present
+
+- name: "aap_config | Grant clean dynatrace monaco job template read to participants team"
+  awx.awx.role:
+    controller_host: "{{ aap_controller_host_normalized }}"
+    controller_username: "{{ aap_controller_username }}"
+    controller_password: "{{ aap_controller_password }}"
+    validate_certs: "{{ aap_controller_validate_certs }}"
+    team: "{{ aap_participants_team_name }}"
+    job_template: "{{ aap_clean_dynatrace_monaco_job_template_name }}"
+    role: read
+    state: present
+
+- name: "aap_config | Grant clean dynatrace oneagent job template read to participants team"
+  awx.awx.role:
+    controller_host: "{{ aap_controller_host_normalized }}"
+    controller_username: "{{ aap_controller_username }}"
+    controller_password: "{{ aap_controller_password }}"
+    validate_certs: "{{ aap_controller_validate_certs }}"
+    team: "{{ aap_participants_team_name }}"
+    job_template: "{{ aap_clean_dynatrace_oneagent_job_template_name }}"
+    role: read
+    state: present
+
 - name: "aap_config | Grant clean remove-app job template read to participants team"
   awx.awx.role:
     controller_host: "{{ aap_controller_host_normalized }}"
@@ -1593,6 +1713,10 @@
     - "{{ aap_clean_remove_image_job_template_name }}"
     - "{{ aap_deploy_dynatrace_oneagent_job_template_name }}"
     - "{{ aap_deploy_dynatrace_monaco_job_template_name }}"
+    - "{{ aap_clean_dynatrace_api_config_job_template_name }}"
+    - "{{ aap_clean_dynatrace_edgeconnect_job_template_name }}"
+    - "{{ aap_clean_dynatrace_monaco_job_template_name }}"
+    - "{{ aap_clean_dynatrace_oneagent_job_template_name }}"
     - "{{ aap_operate_start_app_job_template_name }}"
     - "{{ aap_operate_stop_app_job_template_name }}"
     - "{{ aap_operate_restart_app_job_template_name }}"

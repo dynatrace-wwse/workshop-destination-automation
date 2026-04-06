@@ -273,6 +273,13 @@ aap_dynatrace_podman_deploy_job_template_labels:
   - "{{ aap_deploy_label }}"
   - "{{ aap_dynatrace_label }}"
   - "{{ aap_podman_label }}"
+aap_dynatrace_clean_job_template_labels:
+  - "{{ aap_clean_label }}"
+  - "{{ aap_dynatrace_label }}"
+aap_dynatrace_podman_clean_job_template_labels:
+  - "{{ aap_clean_label }}"
+  - "{{ aap_dynatrace_label }}"
+  - "{{ aap_podman_label }}"
 aap_app_clean_job_template_labels:
   - "{{ aap_app_label }}"
   - "{{ aap_clean_label }}"
@@ -424,6 +431,52 @@ aap_deploy_dynatrace_edgeconnect_job_template_extra_vars:
   dynatrace_edgeconnect_oauth_endpoint: "https://sso.dynatrace.com/sso/oauth2/token"
   dynatrace_edgeconnect_host_patterns: []
   dynatrace_edgeconnect_host_mappings: []
+
+# Job template for Dynatrace API config cleanup
+aap_clean_dynatrace_api_config_job_template_name: "destination-automation-clean-dynatrace-api-config"
+aap_clean_dynatrace_api_config_job_template_description: "Remove Dynatrace settings configured by API config deploy role"
+aap_clean_dynatrace_api_config_job_template_playbook: "clean/playbooks/remove_dynatrace_api_config.yml"
+aap_clean_dynatrace_api_config_job_template_credentials:
+  - "{{ aap_machine_credential_name }}"
+  - "{{ aap_dynatrace_monaco_credential_name }}"
+aap_clean_dynatrace_api_config_job_template_become_enabled: false
+aap_clean_dynatrace_api_config_job_template_extra_vars:
+  target_hosts: "{{ aap_workshop_group_name }}"
+
+# Job template for Dynatrace EdgeConnect cleanup
+aap_clean_dynatrace_edgeconnect_job_template_name: "destination-automation-clean-dynatrace-edgeconnect"
+aap_clean_dynatrace_edgeconnect_job_template_description: "Remove Dynatrace EdgeConnect registration and local runtime"
+aap_clean_dynatrace_edgeconnect_job_template_playbook: "clean/playbooks/remove_dynatrace_edgeconnect.yml"
+aap_clean_dynatrace_edgeconnect_job_template_credentials:
+  - "{{ aap_machine_credential_name }}"
+  - "{{ aap_dynatrace_monaco_credential_name }}"
+  - "{{ aap_dynatrace_oauth_credential_name }}"
+aap_clean_dynatrace_edgeconnect_job_template_become_enabled: false
+aap_clean_dynatrace_edgeconnect_job_template_extra_vars:
+  target_hosts: "{{ aap_workshop_group_name }}"
+  dynatrace_edgeconnect_clean_oauth_endpoint: "https://sso.dynatrace.com/sso/oauth2/token"
+
+# Job template for Dynatrace Monaco cleanup
+aap_clean_dynatrace_monaco_job_template_name: "destination-automation-clean-dynatrace-monaco"
+aap_clean_dynatrace_monaco_job_template_description: "Remove Monaco-managed Dynatrace configuration"
+aap_clean_dynatrace_monaco_job_template_playbook: "clean/playbooks/remove_dynatrace_monaco.yml"
+aap_clean_dynatrace_monaco_job_template_credentials:
+  - "{{ aap_machine_credential_name }}"
+  - "{{ aap_dynatrace_monaco_credential_name }}"
+aap_clean_dynatrace_monaco_job_template_become_enabled: false
+aap_clean_dynatrace_monaco_job_template_extra_vars:
+  target_hosts: "{{ aap_workshop_group_name }}"
+
+# Job template for Dynatrace OneAgent cleanup
+aap_clean_dynatrace_oneagent_job_template_name: "destination-automation-clean-dynatrace-oneagent"
+aap_clean_dynatrace_oneagent_job_template_description: "Uninstall Dynatrace OneAgent from target hosts"
+aap_clean_dynatrace_oneagent_job_template_playbook: "clean/playbooks/remove_dynatrace_oneagent.yml"
+aap_clean_dynatrace_oneagent_job_template_credentials:
+  - "{{ aap_machine_credential_name }}"
+  - "{{ aap_dynatrace_oneagent_credential_name }}"
+aap_clean_dynatrace_oneagent_job_template_become_enabled: true
+aap_clean_dynatrace_oneagent_job_template_extra_vars:
+  target_hosts: "{{ aap_dynatrace_target_group_name }}"
 
 # Job templates for app operations (start, stop, restart)
 aap_operate_start_app_job_template_name: "destination-automation-operate-start-app"
