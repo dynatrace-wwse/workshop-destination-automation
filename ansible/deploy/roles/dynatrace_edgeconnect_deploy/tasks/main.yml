@@ -42,7 +42,7 @@
 
 - name: "dynatrace_edgeconnect_deploy | Get registered EdgeConnect configurations"
   ansible.builtin.uri:
-    url: "{{ dynatrace_edgeconnect_platform_url | regex_replace('/$', '') }}/platform/app-engine/edge-connect/v1/edge-connects"
+    url: "{{ dynatrace_edgeconnect_platform_url | regex_replace('/$', '') }}/platform/app-engine/edge-connect/v1/edge-connects?add-fields=name,hostPatterns,hostMappings"
     method: GET
     headers:
       Authorization: "Bearer {{ _edgeconnect_oauth_token_result.json.access_token }}"

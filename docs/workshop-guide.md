@@ -178,6 +178,9 @@ BizEvents:
 - Matching Condition: matchesValue(dt.host_group.id,"destination-automation")
 - Pipeline: destination-automation-bizevents
 
+### Enable Workflows Authorization
+Open the Workflows app.  In the top right corner, click on the gear icon, then Authorization Settings.  Enable all Primary Permissions.  Enable all Secondary Permissions.  Click Save.
+
 ### Deploy OneAgent
 desetination-automation-deploy-dynatrace-oneagent
 
