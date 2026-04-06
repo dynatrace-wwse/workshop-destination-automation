@@ -23,6 +23,16 @@
         "dql": {
           "script": "fieldsAdd gen_ai.request.temperature = traceloop.association.properties.ls_temperature"
         }
+      },
+      {
+        "id": "processor_Ollama_Client_Request_9634",
+        "type": "dql",
+        "matcher": "matchesValue(span.name,\"ollama.client.request\")",
+        "description": "Ollama Client Request",
+        "enabled": true,
+        "dql": {
+          "script": "fieldsAdd ollama.eval_duration = toDuration(ollama.eval_duration)\n| fieldsAdd ollama.load_duration = toDuration(ollama.load_duration)\n| fieldsAdd ollama.prompt_eval_duration = toDuration(ollama.prompt_eval_duration)\n| fieldsAdd ollama.total_duration = toDuration(ollama.total_duration)"
+        }
       }
     ]
   },
