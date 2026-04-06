@@ -143,7 +143,7 @@
     headers:
       Authorization: "Bearer {{ dynatrace_api_config_clean_platform_token }}"
     validate_certs: "{{ dynatrace_api_config_clean_validate_certs }}"
-    status_code: 200
+    status_code: 204
   loop: "{{ _eda_connection_existing }}"
   loop_control:
     label: "{{ item.objectId }}"
@@ -177,7 +177,7 @@
     headers:
       Authorization: "Bearer {{ dynatrace_api_config_clean_platform_token }}"
     validate_certs: "{{ dynatrace_api_config_clean_validate_certs }}"
-    status_code: 200
+    status_code: 204
   loop: "{{ _service_detection_existing | default([]) }}"
   loop_control:
     label: "{{ item.objectId }}"

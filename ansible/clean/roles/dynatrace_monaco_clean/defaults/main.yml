@@ -12,5 +12,6 @@ dynatrace_monaco_clean_base_dir: "{{ destination_automation_base_dir | default('
 dynatrace_monaco_clean_project_root: "{{ dynatrace_monaco_clean_base_dir }}"
 dynatrace_monaco_clean_config_root: "{{ dynatrace_monaco_clean_project_root }}/dynatrace/config"
 dynatrace_monaco_clean_manifest_path: "{{ dynatrace_monaco_clean_config_root }}/manifest.yaml"
+dynatrace_monaco_clean_delete_file_path: "{{ dynatrace_monaco_clean_config_root }}/delete.yaml"
 dynatrace_monaco_clean_binary_path: "{{ dynatrace_monaco_clean_config_root }}/monaco"
 dynatrace_monaco_clean_validate_certs: true

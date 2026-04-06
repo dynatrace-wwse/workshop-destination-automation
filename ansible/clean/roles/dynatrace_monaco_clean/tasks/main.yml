@@ -55,19 +55,69 @@
     validate_certs: "{{ dynatrace_monaco_clean_validate_certs }}"
   when: dynatrace_monaco_clean_download_required
 
+- name: "dynatrace_monaco_clean | Remove stale delete file"
+  ansible.builtin.file:
+    path: "{{ dynatrace_monaco_clean_delete_file_path }}"
+    state: absent
+
+- name: "dynatrace_monaco_clean | Generate Monaco delete file"
+  ansible.builtin.command:
+    cmd: >-
+      {{ dynatrace_monaco_clean_binary_path }}
+      generate deletefile manifest.yaml
+      --file {{ dynatrace_monaco_clean_delete_file_path | basename }}
+      --verbose
+    chdir: "{{ dynatrace_monaco_clean_config_root }}"
+  environment:
+    MONACO_FEAT_PLATFORM_TOKEN: "true"
+    DT_PLATFORM_URL: "{{ dynatrace_monaco_clean_platform_url }}"
+    DT_PLATFORM_TOKEN: "{{ dynatrace_monaco_clean_platform_token }}"
+  register: dynatrace_monaco_clean_generate_delete_file
+  changed_when: true
+
 - name: "dynatrace_monaco_clean | Run Monaco delete"
   ansible.builtin.command:
-    cmd: "{{ dynatrace_monaco_clean_binary_path }} delete manifest.yaml --verbose"
+    cmd: >-
+      {{ dynatrace_monaco_clean_binary_path }}
+      delete
+      --manifest manifest.yaml
+      --file {{ dynatrace_monaco_clean_delete_file_path | basename }}
+      --verbose
     chdir: "{{ dynatrace_monaco_clean_config_root }}"
   environment:
     MONACO_FEAT_PLATFORM_TOKEN: "true"
     DT_PLATFORM_URL: "{{ dynatrace_monaco_clean_platform_url }}"
     DT_PLATFORM_TOKEN: "{{ dynatrace_monaco_clean_platform_token }}"
   register: dynatrace_monaco_clean_delete
+  failed_when: >-
+    dynatrace_monaco_clean_delete.rc != 0
+    and
+    (
+      ('constraintviolations' not in (dynatrace_monaco_clean_delete.stdout | lower))
+      or
+      (
+        ('builtin:openpipeline.spans.routing' not in (dynatrace_monaco_clean_delete.stdout | lower))
+        and
+        ('builtin:openpipeline.logs.routing' not in (dynatrace_monaco_clean_delete.stdout | lower))
+        and
+        ('builtin:openpipeline.bizevents.routing' not in (dynatrace_monaco_clean_delete.stdout | lower))
+      )
+    )
   changed_when: >-
     ('no configurations to delete' not in (dynatrace_monaco_clean_delete.stdout | lower))
     and
     ('no configuration changes' not in (dynatrace_monaco_clean_delete.stdout | lower))
+
+- name: "dynatrace_monaco_clean | Warn about partial cleanup due to OpenPipeline dependencies"
+  ansible.builtin.debug:
+    msg: >-
+      Monaco reported delete dependency constraints for OpenPipeline resources.
+      Continuing because this is a known non-fatal cleanup limitation.
+      Review Monaco output for referenced routing schemas.
+  when: >-
+    dynatrace_monaco_clean_delete.rc != 0
+    and
+    ('constraintviolations' in (dynatrace_monaco_clean_delete.stdout | lower))
 
 - name: "dynatrace_monaco_clean | Display cleanup summary"
   ansible.builtin.debug:
@@ -75,4 +125,5 @@
       - "Monaco version target:  {{ dynatrace_monaco_clean_version }}"
       - "Monaco binary path:    {{ dynatrace_monaco_clean_binary_path }}"
       - "Manifest path:         {{ dynatrace_monaco_clean_manifest_path }}"
+      - "Delete file path:      {{ dynatrace_monaco_clean_delete_file_path }}"
       - "Delete rc:             {{ dynatrace_monaco_clean_delete.rc }}"
