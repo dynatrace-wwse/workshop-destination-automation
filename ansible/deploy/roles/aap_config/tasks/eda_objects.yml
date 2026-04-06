@@ -152,7 +152,7 @@
 
 - name: "aap_config | Generate AAP Controller OAuth2 token for EDA credential"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}/api/controller/v2/tokens/"
+    url: "{{ aap_controller_host_normalized }}/api/controller/v2/tokens/"
     method: POST
     user: "{{ aap_eda_service_account_username }}"
     password: "{{ aap_eda_service_account_password }}"

@@ -15,6 +15,17 @@
       AAP controller API credentials are required.
       Set AAP_CONTROLLER_HOST, AAP_CONTROLLER_USERNAME, and AAP_CONTROLLER_PASSWORD.
 
+- name: "aap_config | Normalize controller host URL"
+  ansible.builtin.set_fact:
+    aap_controller_host_normalized: >-
+      {{
+        (
+          (aap_controller_host | trim)
+          if ((aap_controller_host | trim) is match('^https?://'))
+          else ('https://' ~ (aap_controller_host | trim))
+        ) | regex_replace('/+$', '')
+      }}
+
 - name: "aap_config | Validate participant count"
   ansible.builtin.assert:
     that:
@@ -202,7 +213,7 @@
 
 - name: "aap_config | Configure UI session timeout"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/settings/authentication/"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/settings/authentication/"
     method: PATCH
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"

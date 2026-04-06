@@ -59,7 +59,7 @@
 
 - name: "aap_config | Create instructor user"
   awx.awx.user:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -71,7 +71,7 @@
 
 - name: "aap_config | Create participant users"
   awx.awx.user:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -84,7 +84,7 @@
 
 - name: "aap_config | Create EDA service account user"
   awx.awx.user:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"

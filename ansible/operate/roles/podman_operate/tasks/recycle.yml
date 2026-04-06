@@ -12,6 +12,26 @@
       - "Recycling easyTravel application stack..."
       - "This will stop all containers, recreate travel-advisor with current env vars, and bring everything back up"
 
+- name: "podman_operate | recycle | Build effective travel-advisor env"
+  ansible.builtin.set_fact:
+    podman_operate_effective_travel_advisor_env: >-
+      {{
+        travel_advisor_env
+        | combine(
+            ({'AI_MODEL': app_ai_model_requested}
+             if (app_ai_model_requested | default('', true) | length) > 0
+             else {}),
+            recursive=True
+          )
+        | combine(
+            ({'AI_TEMPERATURE': (app_ai_temperature_requested | string)}
+             if (app_ai_temperature_requested | default('', true) | string | length) > 0
+             else {}),
+            recursive=True
+          )
+      }}
+  changed_when: false
+
 - name: "podman_operate | recycle | Check if containers exist"
   containers.podman.podman_container_info:
     name: "{{ item }}"
@@ -107,7 +127,7 @@
 - name: "podman_operate | recycle | Pull LLM model in Ollama"
   containers.podman.podman_container_exec:
     name: "{{ ollama_name }}"
-    command: "ollama pull {{ travel_advisor_env.AI_MODEL }}"
+    command: "ollama pull {{ podman_operate_effective_travel_advisor_env.AI_MODEL }}"
   register: ollama_pull
   when:
     - ollama_name in existing_containers
@@ -143,7 +163,7 @@
       - "{{ travel_advisor_name }}"
     expose:
       - "{{ travel_advisor_port }}"
-    env: "{{ travel_advisor_env }}"
+    env: "{{ podman_operate_effective_travel_advisor_env }}"
     volumes:
       - "{{ app_config_path }}/destinations:/app/destinations:ro,Z"
       - "{{ app_config_path }}/prompts:/app/prompts:ro,Z"
@@ -210,7 +230,7 @@
   ansible.builtin.debug:
     msg:
       - "✓ easyTravel application stack recycled successfully!"
-      - "✓ travel-advisor recreated with current env vars (AI_MODEL: {{ travel_advisor_env.AI_MODEL }}, AI_TEMPERATURE: {{ travel_advisor_env.AI_TEMPERATURE }})"
+      - "✓ travel-advisor recreated with current env vars (AI_MODEL: {{ podman_operate_effective_travel_advisor_env.AI_MODEL }}, AI_TEMPERATURE: {{ podman_operate_effective_travel_advisor_env.AI_TEMPERATURE }})"
       - "✓ Access the web UI at: http://localhost:{{ host_nginx_port }}"
       - "✓ API endpoints available at: http://localhost:{{ host_nginx_port }}/api/v1"
 

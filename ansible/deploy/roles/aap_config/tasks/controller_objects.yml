@@ -1,7 +1,7 @@
 ---
 - name: "aap_config | Create destination-automation organization"
   awx.awx.organization:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -13,7 +13,7 @@
 
 - name: "aap_config | Query existing aap-service-account credential"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/credentials/?name={{ aap_machine_credential_name | urlencode }}&organization__name={{ aap_org_name | urlencode }}"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/credentials/?name={{ aap_machine_credential_name | urlencode }}&organization__name={{ aap_org_name | urlencode }}"
     method: GET
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"
@@ -30,7 +30,7 @@
 
 - name: "aap_config | Create Machine credential for aap-service-account"
   awx.awx.credential:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -60,7 +60,7 @@
 
 - name: "aap_config | Create Dynatrace Monaco custom credential type"
   awx.awx.credential_type:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -73,7 +73,7 @@
 
 - name: "aap_config | Query existing Dynatrace Monaco credential"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/credentials/?name={{ aap_dynatrace_monaco_credential_name | urlencode }}&organization__name={{ aap_org_name | urlencode }}"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/credentials/?name={{ aap_dynatrace_monaco_credential_name | urlencode }}&organization__name={{ aap_org_name | urlencode }}"
     method: GET
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"
@@ -90,7 +90,7 @@
 
 - name: "aap_config | Create Dynatrace Monaco credential object"
   awx.awx.credential:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -120,7 +120,7 @@
 
 - name: "aap_config | Create Dynatrace OTLP custom credential type"
   awx.awx.credential_type:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -134,7 +134,7 @@
 
 - name: "aap_config | Query existing Dynatrace OTLP credential"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/credentials/?name={{ aap_dynatrace_otlp_credential_name | urlencode }}&organization__name={{ aap_org_name | urlencode }}"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/credentials/?name={{ aap_dynatrace_otlp_credential_name | urlencode }}&organization__name={{ aap_org_name | urlencode }}"
     method: GET
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"
@@ -151,7 +151,7 @@
 
 - name: "aap_config | Create Dynatrace OTLP credential object"
   awx.awx.credential:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -181,7 +181,7 @@
 
 - name: "aap_config | Create Dynatrace OAuth Client custom credential type"
   awx.awx.credential_type:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -195,7 +195,7 @@
 
 - name: "aap_config | Query existing Dynatrace OAuth Client credential"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/credentials/?name={{ aap_dynatrace_oauth_credential_name | urlencode }}&organization__name={{ aap_org_name | urlencode }}"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/credentials/?name={{ aap_dynatrace_oauth_credential_name | urlencode }}&organization__name={{ aap_org_name | urlencode }}"
     method: GET
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"
@@ -212,7 +212,7 @@
 
 - name: "aap_config | Create Dynatrace OAuth Client credential object"
   awx.awx.credential:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -244,7 +244,7 @@
 
 - name: "aap_config | Create Dynatrace OneAgent PaaS custom credential type"
   awx.awx.credential_type:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -257,7 +257,7 @@
 
 - name: "aap_config | Query existing Dynatrace OneAgent credential"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/credentials/?name={{ aap_dynatrace_oneagent_credential_name | urlencode }}&organization__name={{ aap_org_name | urlencode }}"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/credentials/?name={{ aap_dynatrace_oneagent_credential_name | urlencode }}&organization__name={{ aap_org_name | urlencode }}"
     method: GET
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"
@@ -274,7 +274,7 @@
 
 - name: "aap_config | Create Dynatrace OneAgent credential object"
   awx.awx.credential:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -304,7 +304,7 @@
 
 - name: "aap_config | Create custom execution environment"
   awx.awx.execution_environment:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -322,7 +322,7 @@
 
 - name: "aap_config | Create OneAgent execution environment"
   awx.awx.execution_environment:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -340,7 +340,7 @@
 
 - name: "aap_config | Create local manual project"
   awx.awx.project:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -354,7 +354,7 @@
 
 - name: "aap_config | Create external git project"
   awx.awx.project:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -371,7 +371,7 @@
 
 - name: "aap_config | Create destination-automation inventory"
   awx.awx.inventory:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -382,7 +382,7 @@
 
 - name: "aap_config | Add localhost to inventory for local mode"
   awx.awx.host:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -395,7 +395,7 @@
 
 - name: "aap_config | Remove legacy localhost host in local mode"
   awx.awx.host:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -408,7 +408,7 @@
 
 - name: "aap_config | Add external hosts to inventory"
   awx.awx.host:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -427,7 +427,7 @@
 
 - name: "aap_config | Create workshop group"
   awx.awx.group:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -438,7 +438,7 @@
 
 - name: "aap_config | Add local host to workshop group"
   awx.awx.group:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -451,7 +451,7 @@
 
 - name: "aap_config | Add external hosts to workshop group"
   awx.awx.group:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -465,7 +465,7 @@
 
 - name: "aap_config | Create destination-automation group"
   awx.awx.group:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -476,7 +476,7 @@
 
 - name: "aap_config | Add local host to destination-automation group"
   awx.awx.group:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -489,7 +489,7 @@
 
 - name: "aap_config | Add external hosts to destination-automation group"
   awx.awx.group:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -503,7 +503,7 @@
 
 - name: "aap_config | Create healthcheck domain label"
   awx.awx.label:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -513,7 +513,7 @@
 
 - name: "aap_config | Create readiness label"
   awx.awx.label:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -523,7 +523,7 @@
 
 - name: "aap_config | Create app label"
   awx.awx.label:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -533,7 +533,7 @@
 
 - name: "aap_config | Create deploy label"
   awx.awx.label:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -543,7 +543,7 @@
 
 - name: "aap_config | Create dynatrace label"
   awx.awx.label:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -553,7 +553,7 @@
 
 - name: "aap_config | Create automate label"
   awx.awx.label:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -563,7 +563,7 @@
 
 - name: "aap_config | Create clean label"
   awx.awx.label:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -573,7 +573,7 @@
 
 - name: "aap_config | Create podman label"
   awx.awx.label:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -583,7 +583,7 @@
 
 - name: "aap_config | Create operate label"
   awx.awx.label:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -593,7 +593,7 @@
 
 - name: "aap_config | Create remediate label"
   awx.awx.label:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -603,7 +603,7 @@
 
 - name: "aap_config | Create node readiness test job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -622,7 +622,7 @@
 
 - name: "aap_config | Create build images job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -641,7 +641,7 @@
 
 - name: "aap_config | Create deploy app job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -660,7 +660,7 @@
 
 - name: "aap_config | Create clean remove-app job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -679,7 +679,7 @@
 
 - name: "aap_config | Create clean remove-image job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -698,7 +698,7 @@
 
 - name: "aap_config | Create deploy Dynatrace OneAgent job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -717,7 +717,7 @@
 
 - name: "aap_config | Create deploy Dynatrace Monaco job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -736,7 +736,7 @@
 
 - name: "aap_config | Create deploy Dynatrace Apps job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -755,7 +755,7 @@
 
 - name: "aap_config | Create deploy Dynatrace API config job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -774,7 +774,7 @@
 
 - name: "aap_config | Create deploy Dynatrace EdgeConnect job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -793,7 +793,7 @@
 
 - name: "aap_config | Create operate start-app job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -812,7 +812,7 @@
 
 - name: "aap_config | Create operate stop-app job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -831,7 +831,7 @@
 
 - name: "aap_config | Create operate restart-app job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -850,7 +850,7 @@
 
 - name: "aap_config | Create operate recycle-app job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -869,7 +869,7 @@
 
 - name: "aap_config | Create automate app AI runtime job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -889,7 +889,7 @@
 
 - name: "aap_config | Set automate app AI runtime job template extra_vars with comments"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_runtime_jt.id }}/"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_runtime_jt.id }}/"
     method: PATCH
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"
@@ -902,7 +902,7 @@
 
 - name: "aap_config | Create automate app AI model job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -922,7 +922,7 @@
 
 - name: "aap_config | Set automate app AI model job template extra_vars with comments"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_model_jt.id }}/"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_model_jt.id }}/"
     method: PATCH
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"
@@ -935,7 +935,7 @@
 
 - name: "aap_config | Create automate app AI temperature job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -955,7 +955,7 @@
 
 - name: "aap_config | Set automate app AI temperature job template extra_vars with comments"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_temperature_jt.id }}/"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_temperature_jt.id }}/"
     method: PATCH
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"
@@ -968,7 +968,7 @@
 
 - name: "aap_config | Create automate app AI rag instructions job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -988,7 +988,7 @@
 
 - name: "aap_config | Set automate app AI rag instructions job template extra_vars with comments"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_rag_jt.id }}/"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_rag_jt.id }}/"
     method: PATCH
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"
@@ -1001,7 +1001,7 @@
 
 - name: "aap_config | Create automate app AI destinations job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1021,7 +1021,7 @@
 
 - name: "aap_config | Set automate app AI destinations job template extra_vars with comments"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_destinations_jt.id }}/"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_destinations_jt.id }}/"
     method: PATCH
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"
@@ -1034,7 +1034,7 @@
 
 - name: "aap_config | Create automate app AI embedding job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1054,7 +1054,7 @@
 
 - name: "aap_config | Set automate app AI embedding job template extra_vars with comments"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_embedding_automate_jt.id }}/"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_embedding_automate_jt.id }}/"
     method: PATCH
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"
@@ -1067,7 +1067,7 @@
 
 - name: "aap_config | Create remediate app AI embedding job template"
   awx.awx.job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1087,7 +1087,7 @@
 
 - name: "aap_config | Set remediate app AI embedding job template extra_vars with comments"
   ansible.builtin.uri:
-    url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_embedding_remediate_jt.id }}/"
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_ai_embedding_remediate_jt.id }}/"
     method: PATCH
     user: "{{ aap_controller_username }}"
     password: "{{ aap_controller_password }}"
@@ -1100,7 +1100,7 @@
 
 - name: "aap_config | Create workflow app AI runtime job template"
   awx.awx.workflow_job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1140,7 +1140,7 @@
   block:
     - name: "aap_config | Query workflow app AI runtime job template by name"
       ansible.builtin.uri:
-        url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/workflow_job_templates/?name={{ aap_workflow_app_ai_runtime_job_template_name | urlencode }}"
+        url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/workflow_job_templates/?name={{ aap_workflow_app_ai_runtime_job_template_name | urlencode }}"
         method: GET
         user: "{{ aap_controller_username }}"
         password: "{{ aap_controller_password }}"
@@ -1151,7 +1151,7 @@
 
     - name: "aap_config | Patch workflow job template extra_vars with comments"
       ansible.builtin.uri:
-        url: "{{ aap_controller_host }}{{ aap_controller_api_prefix }}v2/workflow_job_templates/{{ _aap_workflow_ai_runtime_wjt_query.json.results[0].id }}/"
+        url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/workflow_job_templates/{{ _aap_workflow_ai_runtime_wjt_query.json.results[0].id }}/"
         method: PATCH
         user: "{{ aap_controller_username }}"
         password: "{{ aap_controller_password }}"
@@ -1165,7 +1165,7 @@
 
 - name: "aap_config | Create workflow deploy app clean job template"
   awx.awx.workflow_job_template:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1224,7 +1224,7 @@
 
 - name: "aap_config | Grant organization admin to instructor"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1235,7 +1235,7 @@
 
 - name: "aap_config | Create instructors team"
   awx.awx.team:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1246,7 +1246,7 @@
 
 - name: "aap_config | Create participants team"
   awx.awx.team:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1257,7 +1257,7 @@
 
 - name: "aap_config | Add instructor to instructors team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1268,7 +1268,7 @@
 
 - name: "aap_config | Add participant users to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1280,7 +1280,7 @@
 
 - name: "aap_config | Grant organization auditor to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1291,7 +1291,7 @@
 
 - name: "aap_config | Grant project admin to instructor"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1302,7 +1302,7 @@
 
 - name: "aap_config | Grant inventory admin to instructor"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1313,7 +1313,7 @@
 
 - name: "aap_config | Grant project read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1324,7 +1324,7 @@
 
 - name: "aap_config | Grant job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1335,7 +1335,7 @@
 
 - name: "aap_config | Grant build-images job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1346,7 +1346,7 @@
 
 - name: "aap_config | Grant deploy-app job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1357,7 +1357,7 @@
 
 - name: "aap_config | Grant dynatrace oneagent job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1368,7 +1368,7 @@
 
 - name: "aap_config | Grant dynatrace monaco job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1379,7 +1379,7 @@
 
 - name: "aap_config | Grant clean remove-app job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1390,7 +1390,7 @@
 
 - name: "aap_config | Grant clean remove-image job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1401,7 +1401,7 @@
 
 - name: "aap_config | Grant operate start-app job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1412,7 +1412,7 @@
 
 - name: "aap_config | Grant operate stop-app job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1423,7 +1423,7 @@
 
 - name: "aap_config | Grant operate restart-app job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1434,7 +1434,7 @@
 
 - name: "aap_config | Grant operate recycle-app job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1445,7 +1445,7 @@
 
 - name: "aap_config | Grant automate app AI runtime job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1456,7 +1456,7 @@
 
 - name: "aap_config | Grant automate app AI model job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1467,7 +1467,7 @@
 
 - name: "aap_config | Grant automate app AI temperature job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1478,7 +1478,7 @@
 
 - name: "aap_config | Grant automate app AI rag instructions job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1489,7 +1489,7 @@
 
 - name: "aap_config | Grant automate app AI destinations job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1500,7 +1500,7 @@
 
 - name: "aap_config | Grant automate app AI embedding job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1511,7 +1511,7 @@
 
 - name: "aap_config | Grant remediate app AI embedding job template read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1522,7 +1522,7 @@
 
 - name: "aap_config | Grant inventory read to participants team"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1533,7 +1533,7 @@
 
 - name: "aap_config | Grant credential use to instructor"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1544,7 +1544,7 @@
 
 - name: "aap_config | Grant Dynatrace Monaco credential use to instructor"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1555,7 +1555,7 @@
 
 - name: "aap_config | Grant Dynatrace OneAgent credential use to instructor"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1566,7 +1566,7 @@
 
 - name: "aap_config | Grant organization member role to EDA service account"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"
@@ -1577,7 +1577,7 @@
 
 - name: "aap_config | Grant execute role on all job templates to EDA service account"
   awx.awx.role:
-    controller_host: "{{ aap_controller_host }}"
+    controller_host: "{{ aap_controller_host_normalized }}"
     controller_username: "{{ aap_controller_username }}"
     controller_password: "{{ aap_controller_password }}"
     validate_certs: "{{ aap_controller_validate_certs }}"

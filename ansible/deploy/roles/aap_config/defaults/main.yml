@@ -687,7 +687,7 @@ aap_workflow_app_ai_runtime_job_template_allow_simultaneous: false
 aap_workflow_app_ai_runtime_job_template_extra_vars_yaml: "{{ aap_automate_app_ai_runtime_job_template_extra_vars_yaml }}"
 aap_workflow_app_ai_runtime_automate_node_identifier: "automate-app-ai-runtime"
 aap_workflow_app_ai_runtime_recycle_node_identifier: "operate-recycle-app"
-aap_workflow_app_ai_runtime_automate_node_extra_data: "{{ aap_automate_app_ai_runtime_job_template_extra_vars }}"
+aap_workflow_app_ai_runtime_automate_node_extra_data: {}
 
 # Workflow job template for app clean -> build -> deploy flow
 aap_workflow_deploy_app_clean_job_template_name: "destination-automation-workflow-deploy-app-clean"
