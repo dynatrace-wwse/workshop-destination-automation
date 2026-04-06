@@ -1,0 +1,11 @@
+---
+# =============================================================
+# Remove Dynatrace EdgeConnect registration and local runtime artifacts
+# =============================================================
+
+- name: "Workshop | Remove Dynatrace EdgeConnect"
+  hosts: "{{ target_hosts | default('all') }}"
+  gather_facts: true
+
+  roles:
+    - role: dynatrace_edgeconnect_clean

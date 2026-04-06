@@ -1,0 +1,84 @@
+---
+- name: "dynatrace_edgeconnect_clean | Validate required credentials"
+  ansible.builtin.assert:
+    that:
+      - dynatrace_edgeconnect_clean_platform_url | length > 0
+      - dynatrace_edgeconnect_clean_oauth_client_id | length > 0
+      - dynatrace_edgeconnect_clean_oauth_client_id != 'REPLACE_ME'
+      - dynatrace_edgeconnect_clean_oauth_client_secret | length > 0
+      - dynatrace_edgeconnect_clean_oauth_client_secret != 'REPLACE_ME'
+      - dynatrace_edgeconnect_clean_oauth_account_urn | length > 0
+      - dynatrace_edgeconnect_clean_oauth_account_urn != 'REPLACE_ME'
+    fail_msg: >-
+      DT_PLATFORM_URL, DT_OAUTH_CLIENT_ID, DT_OAUTH_CLIENT_SECRET, and DT_OAUTH_ACCOUNT_URN
+      must be set before running this role.
+
+- name: "dynatrace_edgeconnect_clean | Obtain OAuth access token for EdgeConnect API"
+  ansible.builtin.uri:
+    url: "{{ dynatrace_edgeconnect_clean_oauth_endpoint }}"
+    method: POST
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    body_format: form-urlencoded
+    body:
+      grant_type: "client_credentials"
+      client_id: "{{ dynatrace_edgeconnect_clean_oauth_client_id }}"
+      client_secret: "{{ dynatrace_edgeconnect_clean_oauth_client_secret }}"
+      resource: "{{ dynatrace_edgeconnect_clean_oauth_account_urn }}"
+      scope: "app-engine:edge-connects:read app-engine:edge-connects:delete oauth2:clients:manage"
+    validate_certs: "{{ dynatrace_edgeconnect_clean_validate_certs }}"
+    status_code: 200
+  register: _edgeconnect_oauth_token_result
+  no_log: true
+
+- name: "dynatrace_edgeconnect_clean | List registered EdgeConnect configurations"
+  ansible.builtin.uri:
+    url: "{{ dynatrace_edgeconnect_clean_platform_url | regex_replace('/$', '') }}/platform/app-engine/edge-connect/v1/edge-connects?add-fields=name"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ _edgeconnect_oauth_token_result.json.access_token }}"
+    validate_certs: "{{ dynatrace_edgeconnect_clean_validate_certs }}"
+    status_code: 200
+  register: _edgeconnect_list_result
+
+- name: "dynatrace_edgeconnect_clean | Find EdgeConnect registrations by name"
+  ansible.builtin.set_fact:
+    _edgeconnect_registered: >-
+      {{
+        (_edgeconnect_list_result.json.edgeConnects | default([]))
+        | selectattr('name', 'defined')
+        | selectattr('name', 'equalto', dynatrace_edgeconnect_clean_name)
+        | list
+      }}
+
+- name: "dynatrace_edgeconnect_clean | Delete EdgeConnect registrations"
+  ansible.builtin.uri:
+    url: "{{ dynatrace_edgeconnect_clean_platform_url | regex_replace('/$', '') }}/platform/app-engine/edge-connect/v1/edge-connects/{{ item.id }}"
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ _edgeconnect_oauth_token_result.json.access_token }}"
+    validate_certs: "{{ dynatrace_edgeconnect_clean_validate_certs }}"
+    status_code: [200, 204]
+  loop: "{{ _edgeconnect_registered }}"
+  loop_control:
+    label: "{{ item.id }}"
+
+- name: "dynatrace_edgeconnect_clean | Remove local EdgeConnect container"
+  containers.podman.podman_container:
+    name: "{{ dynatrace_edgeconnect_clean_container_name }}"
+    state: absent
+    force_delete: true
+  failed_when: false
+
+- name: "dynatrace_edgeconnect_clean | Remove local EdgeConnect config directory"
+  ansible.builtin.file:
+    path: "{{ dynatrace_edgeconnect_clean_config_dir }}"
+    state: absent
+  when: dynatrace_edgeconnect_clean_remove_config_dir
+
+- name: "dynatrace_edgeconnect_clean | Display cleanup summary"
+  ansible.builtin.debug:
+    msg:
+      - "EdgeConnect registrations removed: {{ _edgeconnect_registered | length }}"
+      - "Container removed: {{ dynatrace_edgeconnect_clean_container_name }}"
+      - "Config directory removed: {{ dynatrace_edgeconnect_clean_remove_config_dir }}"

@@ -1,0 +1,15 @@
+---
+# =============================================================
+# Remove Dynatrace Monaco-managed configuration project objects
+#
+# Requires:
+#   DT_PLATFORM_URL
+#   DT_PLATFORM_TOKEN
+# =============================================================
+
+- name: "Workshop | Remove Dynatrace Monaco Configuration"
+  hosts: "{{ target_hosts | default('localhost') }}"
+  gather_facts: false
+
+  roles:
+    - role: dynatrace_monaco_clean

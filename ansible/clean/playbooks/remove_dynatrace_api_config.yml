@@ -1,0 +1,15 @@
+---
+# =============================================================
+# Remove Dynatrace API settings configured by deploy_dynatrace_api_config
+#
+# Requires (injected by Dynatrace Monaco credential):
+#   DT_PLATFORM_URL
+#   DT_PLATFORM_TOKEN
+# =============================================================
+
+- name: "Workshop | Remove Dynatrace API Settings"
+  hosts: "{{ target_hosts | default('localhost') }}"
+  gather_facts: true
+
+  roles:
+    - role: dynatrace_api_config_clean

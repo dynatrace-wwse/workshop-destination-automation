@@ -1,0 +1,22 @@
+---
+# dynatrace_oneagent_clean role defaults
+
+dynatrace_oneagent_clean_environment_url: >-
+  {{
+    lookup('ansible.builtin.env', 'oneagent_environment_url')
+    | default(lookup('ansible.builtin.env', 'DYNATRACE_ENV_URL'), true)
+    | default('', true)
+  }}
+dynatrace_oneagent_clean_paas_token: >-
+  {{
+    lookup('ansible.builtin.env', 'oneagent_paas_token')
+    | default(lookup('ansible.builtin.env', 'DYNATRACE_PAAS_TOKEN'), true)
+    | default('', true)
+  }}
+dynatrace_oneagent_clean_validate_certs: "{{ (lookup('ansible.builtin.env', 'DYNATRACE_VALIDATE_CERTS') | default('true', true)) | bool }}"
+
+dynatrace_oneagent_clean_installer_arch: "x86"
+dynatrace_oneagent_clean_download_dir: "/tmp"
+dynatrace_oneagent_clean_package_state: "absent"
+dynatrace_oneagent_clean_install_args: []
+dynatrace_oneagent_clean_platform_install_args: []

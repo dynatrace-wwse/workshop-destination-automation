@@ -1,0 +1,29 @@
+---
+- name: "dynatrace_oneagent_clean | Validate direct uninstall configuration"
+  ansible.builtin.assert:
+    that:
+      - dynatrace_oneagent_clean_environment_url | length > 0
+      - dynatrace_oneagent_clean_paas_token | length > 0
+    fail_msg: >-
+      DYNATRACE_ENV_URL and DYNATRACE_PAAS_TOKEN must be set for OneAgent uninstall.
+
+- name: "dynatrace_oneagent_clean | Display uninstall configuration"
+  ansible.builtin.debug:
+    msg:
+      - "Dynatrace environment URL: {{ dynatrace_oneagent_clean_environment_url }}"
+      - "OneAgent package state: {{ dynatrace_oneagent_clean_package_state }}"
+      - "Installer architecture: {{ dynatrace_oneagent_clean_installer_arch }}"
+
+- name: "dynatrace_oneagent_clean | Uninstall OneAgent via dynatrace.oneagent role"
+  ansible.builtin.include_role:
+    name: dynatrace.oneagent.oneagent
+  vars:
+    oneagent_environment_url: "{{ dynatrace_oneagent_clean_environment_url }}"
+    oneagent_paas_token: "{{ dynatrace_oneagent_clean_paas_token }}"
+    oneagent_validate_certs: "{{ dynatrace_oneagent_clean_validate_certs }}"
+    oneagent_installer_arch: "{{ dynatrace_oneagent_clean_installer_arch }}"
+    oneagent_download_dir: "{{ dynatrace_oneagent_clean_download_dir }}"
+    oneagent_package_state: "{{ dynatrace_oneagent_clean_package_state }}"
+    oneagent_install_args: "{{ dynatrace_oneagent_clean_install_args }}"
+    oneagent_platform_install_args: "{{ dynatrace_oneagent_clean_platform_install_args }}"
+  no_log: true
