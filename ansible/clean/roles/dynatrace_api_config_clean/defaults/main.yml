@@ -1,0 +1,20 @@
+---
+# Dynatrace platform connection (injected by Monaco credential)
+dynatrace_api_config_clean_platform_url: "{{ lookup('ansible.builtin.env', 'DT_PLATFORM_URL') | default('', true) }}"
+dynatrace_api_config_clean_platform_token: "{{ lookup('ansible.builtin.env', 'DT_PLATFORM_TOKEN') | default('', true) }}"
+dynatrace_api_config_clean_validate_certs: false
+
+# Settings API endpoint resolution
+dynatrace_api_config_clean_settings_api_preferred_path: "/platform/classic/environment-api/v2/settings/objects"
+dynatrace_api_config_clean_settings_api_fallback_path: "/api/v2/settings/objects"
+dynatrace_api_config_clean_settings_api_probe_schema: "builtin:service-detection.full-web-request"
+
+# Objects to remove
+dynatrace_api_config_clean_eda_connection_name: "destination-automation-eda"
+dynatrace_api_config_clean_service_detection_enabled: true
+dynatrace_api_config_clean_service_detection_name: "destination-automation-ai-travel-advisor"
+
+# Reverse only the allowlist hosts this workshop adds (do not delete global setting object)
+dynatrace_api_config_clean_js_outbound_hosts_to_remove:
+  - "{{ ansible_fqdn }}"
+  - "host.containers.internal"

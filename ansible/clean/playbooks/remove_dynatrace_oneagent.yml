@@ -1,0 +1,12 @@
+---
+# =============================================================
+# Fully uninstall Dynatrace OneAgent from target hosts
+# =============================================================
+
+- name: "Workshop | Remove Dynatrace OneAgent"
+  hosts: "{{ target_hosts | default('localhost') }}"
+  gather_facts: true
+  become: true
+
+  roles:
+    - role: dynatrace_oneagent_clean
