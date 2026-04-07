@@ -19,3 +19,4 @@
     - name: "Configure AAP objects"
       ansible.builtin.include_role:
         name: aap_config
+        tasks_from: main.yml
