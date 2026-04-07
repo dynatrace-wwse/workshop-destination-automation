@@ -1,0 +1,44 @@
+---
+# =============================================================
+# Import Decision Environment Image
+#
+# Imports an existing DE image and pushes it to the target
+# Automation Hub registry without rebuilding it.
+#
+# Usage:
+#   ansible-playbook provision/playbooks/import_custom_de.yml
+#
+# Optional overrides:
+#   -e de_base_image=ghcr.io/org/image:tag  # source image to import
+#   -e de_push_to_registry=false             # skip push
+#   -e de_registry_host=my-hub               # override Hub registry hostname
+# =============================================================
+
+- name: "Workshop | Import decision environment image"
+  hosts: localhost
+  gather_facts: true
+  vars:
+    ansible_connection: local
+
+  roles:
+    - role: import_custom_de
+      become: true
+      tags:
+        - import-de
+        - provision
+
+  post_tasks:
+    - name: "Display next steps"
+      ansible.builtin.debug:
+        msg:
+          - ""
+          - "========================================"
+          - "DE Import Complete"
+          - "========================================"
+          - "Source image: {{ de_base_image }}"
+          - "Registry image: {{ de_registry_image if de_push_to_registry else 'skipped (DE_PUSH_TO_REGISTRY=false)' }}"
+          - ""
+          - "To complete the workflow:"
+          - "  1. Run: ansible-playbook deploy/playbooks/configure_eda.yml"
+          - "     This will register the DE and create the rulebook activation in AAP EDA"
+          - ""

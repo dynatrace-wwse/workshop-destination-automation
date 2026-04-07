@@ -1,0 +1,44 @@
+---
+# =============================================================
+# Import Execution Environment Images
+#
+# Imports existing EE images and pushes them to the target
+# Automation Hub registry without rebuilding them.
+#
+# Usage:
+#   ansible-playbook provision/playbooks/import_custom_ee.yml
+#
+# Optional overrides:
+#   -e ee_podman_base_image=ghcr.io/org/podman-ee:tag
+#   -e ee_oneagent_base_image=ghcr.io/org/oneagent-ee:tag
+#   -e ee_push_to_registry=false
+#   -e ee_registry_host=my-hub
+# =============================================================
+
+- name: "Workshop | Import execution environment images"
+  hosts: localhost
+  gather_facts: true
+  vars:
+    ansible_connection: local
+
+  roles:
+    - role: import_custom_ee
+      become: true
+      tags:
+        - import-ee
+        - provision
+
+  post_tasks:
+    - name: "Display next steps"
+      ansible.builtin.debug:
+        msg:
+          - ""
+          - "========================================"
+          - "EE Import Complete"
+          - "========================================"
+          - "Registry images: {{ ee_import_profile_summaries | map(attribute='registry_summary') | join(', ') }}"
+          - ""
+          - "To complete the workflow:"
+          - "  1. Run: ansible-playbook deploy/playbooks/configure_aap.yml"
+          - "     This will register the EEs in AAP"
+          - ""

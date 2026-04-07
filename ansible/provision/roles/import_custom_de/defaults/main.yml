@@ -1,0 +1,26 @@
+---
+# import_custom_de role defaults
+
+# DE image naming for destination registry tag
+de_image_name: "destination-automation-dt-de"
+de_image_tag: "latest"
+
+# Registry and certificate handling
+de_registry_host: >-
+  {{
+    lookup('ansible.builtin.env', 'DE_REGISTRY_HOST')
+    | default(lookup('ansible.builtin.env', 'EE_REGISTRY_HOST'), true)
+    | default(ansible_fqdn, true)
+    | default(ansible_hostname, true)
+    | default('localhost', true)
+  }}
+de_registry_validate_certs: "{{ (lookup('ansible.builtin.env', 'DE_REGISTRY_VALIDATE_CERTS') | default('false', true)) | bool }}"
+
+# Local Hub registry details
+de_registry_username: "{{ lookup('ansible.builtin.env', 'DE_REGISTRY_USERNAME') | default('admin', true) }}"
+de_registry_password: "{{ lookup('ansible.builtin.env', 'DE_REGISTRY_PASSWORD') | default(lookup('ansible.builtin.env', 'AAP_ADMIN_PASSWORD') | default('', true), true) }}"
+de_registry_image: "{{ de_registry_host }}/{{ de_image_name }}:{{ de_image_tag }}"
+de_push_to_registry: "{{ (lookup('ansible.builtin.env', 'DE_PUSH_TO_REGISTRY') | default('true', true)) | bool }}"
+
+# Source DE image to import (can be overridden via env DE_BASE_IMAGE or -e de_base_image=...)
+de_base_image: "{{ lookup('ansible.builtin.env', 'DE_BASE_IMAGE') | default('ghcr.io/dynatrace-wwse/destination-automation-dt-de:1.0', true) }}"
