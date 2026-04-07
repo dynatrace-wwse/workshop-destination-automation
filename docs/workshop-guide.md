@@ -48,18 +48,11 @@ This workshop demonstrates a production-style workflow using:
 
 ## Setup
 
-### Clone the repository
-
-```bash
-cd ~
-git clone https://github.com/dynatrace-wwse/workshop-destination-automation.git
-```
-
 #### Install packages
 ```
 sudo dnf update -y
 sudo dnf install -y ansible-core
-sudo dnf install -y wget git-core rsync vim nano
+sudo dnf install -y wget git-core rsync vim nano git
 sudo dnf install -y podman
 sudo dnf install -y python3-pip
 ```
@@ -69,9 +62,17 @@ sudo dnf install -y python3-pip
 sudo reboot
 ```
 
+### Clone the repository
+
+```bash
+cd ~
+git clone https://github.com/dynatrace-wwse/workshop-destination-automation.git
+```
+
 ## AAP Provisioning
 
 ### Download AAP install tarball
+Locate the `Ansible Automation Platform 2.6 Containerized Setup Bundle` for RHEL 9 at [https://access.redhat.com/downloads](https://access.redhat.com/downloads).
 ```
 mkdir ~/redhat
 cd ~/redhat
@@ -106,14 +107,27 @@ ansible-playbook provision/playbooks/install_aap_containerized.yml
 
 ### Apply your subscription license via the AAP web interface
 
-### Build images for execution environment and decision environment
-```
- ansible-playbook provision/playbooks/build_custom_ee.yml
- ```
+### Provision execution environments (build or import)
 
- ```
- ansible-playbook provision/playbooks/build_custom_de.yml
- ```
+You can build images locally from source images with ansible-builder:
+```
+ansible-playbook provision/playbooks/build_custom_ee.yml
+```
+
+```
+ansible-playbook provision/playbooks/build_custom_de.yml
+```
+
+You can import images created specifically for this workshop:
+```
+ansible-playbook provision/playbooks/import_custom_ee.yml
+```
+This will use: ghcr.io/dynatrace-wwse/destination-automation-oneagent-ee and ghcr.io/dynatrace-wwse/destination-automation-podman-ee
+
+```
+ansible-playbook provision/playbooks/import_custom_ee.yml
+```
+This will use: ghcr.io/dynatrace-wwse/destination-automation-dt-de
 
 ## AAP Deployment
 
