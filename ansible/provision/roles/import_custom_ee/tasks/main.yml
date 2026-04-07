@@ -1,0 +1,131 @@
+---
+# Import existing Execution Environment images and push to registry
+
+- name: "import_custom_ee | Validate required import variables"
+  ansible.builtin.assert:
+    that:
+      - ee_import_profiles | length > 0
+      - ee_import_profiles | map(attribute='source_image') | list | length > 0
+      - (not ee_push_to_registry) or (ee_registry_host | length > 0)
+      - (not ee_push_to_registry) or ((ee_import_profiles | map(attribute='registry_image') | list | length) > 0)
+    fail_msg: "Required EE import variables are missing. Verify role defaults or override variables."
+
+- name: "import_custom_ee | Configure podman to skip TLS verification for Hub"
+  ansible.builtin.copy:
+    content: |
+      [[registry]]
+      location = "{{ ee_registry_host }}"
+      insecure = true
+    dest: /etc/containers/registries.conf.d/hub-insecure.conf
+    mode: '0644'
+  become: true
+  when:
+    - ee_push_to_registry
+    - not ee_registry_validate_certs
+
+- name: "import_custom_ee | Remove insecure registry override when TLS verify is enabled"
+  ansible.builtin.file:
+    path: /etc/containers/registries.conf.d/hub-insecure.conf
+    state: absent
+  become: true
+  when:
+    - ee_push_to_registry
+    - ee_registry_validate_certs
+
+- name: "import_custom_ee | Log in to local Hub registry (prepare for push)"
+  ansible.builtin.shell: |
+    podman login -u {{ ee_registry_username | quote }} -p {{ ee_registry_password | quote }} \
+      --tls-verify={{ ee_registry_validate_certs | ternary('true', 'false') }} {{ ee_registry_host | quote }}
+  become: true
+  no_log: true
+  register: ee_registry_login
+  changed_when: false
+  failed_when: ee_registry_login.rc != 0
+  when: ee_push_to_registry
+
+- name: "import_custom_ee | Initialize import summary"
+  ansible.builtin.set_fact:
+    ee_import_profile_summaries: []
+
+- name: "import_custom_ee | Ensure source images are available locally"
+  ansible.builtin.shell: |
+    set -e
+    podman image exists {{ ee_profile.source_image | quote }} || podman pull {{ ee_profile.source_image | quote }}
+  args:
+    executable: /bin/bash
+  loop: "{{ ee_import_profiles }}"
+  loop_control:
+    loop_var: ee_profile
+    label: "{{ ee_profile.name }} -> {{ ee_profile.source_image }}"
+  register: ee_source_image_preflight
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: "import_custom_ee | Fail when a source image is not available"
+  ansible.builtin.fail:
+    msg: >-
+      Source image preflight failed for profile {{ item.ee_profile.name }}.
+      Could not use image '{{ item.ee_profile.source_image }}'.
+      Ensure the image exists in the source registry and that podman authentication is valid.
+      Command output: {{ (item.stderr | default(item.stdout, true)) | trim }}
+  loop: "{{ ee_source_image_preflight.results | default([]) }}"
+  when: item.rc | default(0) != 0
+
+- name: "import_custom_ee | Tag source image for Hub registry"
+  ansible.builtin.command:
+    cmd: "podman tag {{ ee_profile.source_image }} {{ ee_profile.registry_image }}"
+  loop: "{{ ee_import_profiles }}"
+  loop_control:
+    loop_var: ee_profile
+    label: "{{ ee_profile.name }}"
+  become: true
+  when:
+    - ee_push_to_registry
+    - ee_profile.source_image != ee_profile.registry_image
+
+- name: "import_custom_ee | Push images to local Hub registry"
+  ansible.builtin.command:
+    cmd: >-
+      podman push {{ ee_profile.registry_image }}
+      --tls-verify={{ ee_registry_validate_certs | ternary('true', 'false') }}
+  loop: "{{ ee_import_profiles }}"
+  loop_control:
+    loop_var: ee_profile
+    label: "{{ ee_profile.name }}"
+  become: true
+  register: ee_push_results
+  when: ee_push_to_registry
+
+- name: "import_custom_ee | Display push output"
+  ansible.builtin.debug:
+    msg: "{{ item.stdout_lines }}"
+  loop: "{{ ee_push_results.results | default([]) }}"
+  when:
+    - ee_push_to_registry
+    - item.stdout_lines is defined
+
+- name: "import_custom_ee | Record import summary"
+  ansible.builtin.set_fact:
+    ee_import_profile_summaries: >-
+      {{
+        ee_import_profile_summaries +
+        [
+          {
+            'name': ee_profile.name,
+            'source_image': ee_profile.source_image,
+            'registry_summary': ee_profile.registry_image if ee_push_to_registry else 'skipped (EE_PUSH_TO_REGISTRY=false)'
+          }
+        ]
+      }}
+  loop: "{{ ee_import_profiles }}"
+  loop_control:
+    loop_var: ee_profile
+
+- name: "import_custom_ee | Display configuration summary"
+  ansible.builtin.debug:
+    msg:
+      - "✓ EE image import completed"
+      - "  Profiles: {{ ee_import_profile_summaries | map(attribute='name') | join(', ') }}"
+      - "  Source images: {{ ee_import_profile_summaries | map(attribute='source_image') | join(', ') }}"
+      - "  Registry tags: {{ ee_import_profile_summaries | map(attribute='registry_summary') | join(', ') }}"

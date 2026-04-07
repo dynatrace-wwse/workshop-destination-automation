@@ -1,0 +1,94 @@
+---
+# Import an existing Decision Environment image and push to registry
+
+- name: "import_custom_de | Validate required import variables"
+  ansible.builtin.assert:
+    that:
+      - de_base_image | length > 0
+      - (not de_push_to_registry) or (de_registry_host | length > 0)
+      - (not de_push_to_registry) or (de_registry_image | length > 0)
+    fail_msg: "Required DE import variables are missing. Verify role defaults or override variables."
+
+- name: "import_custom_de | Configure podman to skip TLS verification for Hub"
+  ansible.builtin.copy:
+    content: |
+      [[registry]]
+      location = "{{ de_registry_host }}"
+      insecure = true
+    dest: /etc/containers/registries.conf.d/hub-insecure.conf
+    mode: '0644'
+  become: true
+  when:
+    - de_push_to_registry
+    - not de_registry_validate_certs
+
+- name: "import_custom_de | Remove insecure registry override when TLS verify is enabled"
+  ansible.builtin.file:
+    path: /etc/containers/registries.conf.d/hub-insecure.conf
+    state: absent
+  become: true
+  when:
+    - de_push_to_registry
+    - de_registry_validate_certs
+
+- name: "import_custom_de | Log in to local Hub registry (prepare for push)"
+  ansible.builtin.shell: |
+    podman login -u {{ de_registry_username | quote }} -p {{ de_registry_password | quote }} \
+      --tls-verify={{ de_registry_validate_certs | ternary('true', 'false') }} {{ de_registry_host | quote }}
+  become: true
+  no_log: true
+  register: de_registry_login
+  changed_when: false
+  failed_when: de_registry_login.rc != 0
+  when: de_push_to_registry
+
+- name: "import_custom_de | Ensure source image is available locally"
+  ansible.builtin.shell: |
+    set -e
+    podman image exists {{ de_base_image | quote }} || podman pull {{ de_base_image | quote }}
+  args:
+    executable: /bin/bash
+  register: de_base_image_preflight
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: "import_custom_de | Fail when source image is not available"
+  ansible.builtin.fail:
+    msg: >-
+      Source image preflight failed.
+      Could not use image '{{ de_base_image }}'.
+      Ensure the image exists in the source registry and that podman authentication is valid.
+      Command output: {{ (de_base_image_preflight.stderr | default(de_base_image_preflight.stdout, true)) | trim }}
+  when: de_base_image_preflight.rc != 0
+
+- name: "import_custom_de | Tag source image for Hub registry"
+  ansible.builtin.command:
+    cmd: "podman tag {{ de_base_image }} {{ de_registry_image }}"
+  become: true
+  when:
+    - de_push_to_registry
+    - de_base_image != de_registry_image
+
+- name: "import_custom_de | Push image to local Hub registry"
+  ansible.builtin.command:
+    cmd: >-
+      podman push {{ de_registry_image }}
+      --tls-verify={{ de_registry_validate_certs | ternary('true', 'false') }}
+  become: true
+  register: de_push_result
+  when: de_push_to_registry
+
+- name: "import_custom_de | Display push result"
+  ansible.builtin.debug:
+    msg: "{{ de_push_result.stdout_lines }}"
+  when:
+    - de_push_to_registry
+    - de_push_result.stdout_lines is defined
+
+- name: "import_custom_de | Display configuration summary"
+  ansible.builtin.debug:
+    msg:
+      - "✓ DE image import completed"
+      - "  Source image: {{ de_base_image }}"
+      - "  Registry image: {{ de_registry_image if de_push_to_registry else 'skipped (DE_PUSH_TO_REGISTRY=false)' }}"

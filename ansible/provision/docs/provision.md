@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The `provision/` function prepares and bootstraps foundational platform components for the workshop, especially AAP containerized installation and custom execution environment images.
+The `provision/` function prepares and bootstraps foundational platform components for the workshop, especially AAP containerized installation and custom environment images.
 
 Execution guidance:
 
@@ -45,6 +45,28 @@ Execution guidance:
 - Execution mode: plain Ansible.
 - Follow-up: intended to be registered later with `deploy/playbooks/configure_eda.yml`.
 
+### `provision/playbooks/import_custom_de.yml`
+
+- Purpose: import an existing decision environment image and push it to the configured Automation Hub registry without rebuilding.
+- Role: `import_custom_de`
+- Execution mode: plain Ansible.
+- Defaults: source image defaults to `ghcr.io/dynatrace-wwse/destination-automation-dt-de:1.0`.
+- Overrides: source image can be set via environment variable `DE_BASE_IMAGE` or extra var `de_base_image`.
+- Follow-up: intended to be registered later with `deploy/playbooks/configure_eda.yml`.
+
+### `provision/playbooks/import_custom_ee.yml`
+
+- Purpose: import existing execution environment images and push them to the configured Automation Hub registry without rebuilding.
+- Role: `import_custom_ee`
+- Execution mode: plain Ansible.
+- Defaults:
+  - Podman EE source image defaults to `ghcr.io/dynatrace-wwse/destination-automation-podman-ee:1.0`.
+  - OneAgent EE source image defaults to `ghcr.io/dynatrace-wwse/destination-automation-oneagent-ee:1.0`.
+- Overrides:
+  - Podman EE source image can be set via environment variable `EE_PODMAN_BASE_IMAGE` or extra var `ee_podman_base_image`.
+  - OneAgent EE source image can be set via environment variable `EE_ONEAGENT_BASE_IMAGE` or extra var `ee_oneagent_base_image`.
+- Follow-up: intended to be registered later in AAP with `deploy/playbooks/configure_aap.yml` or administrative updates.
+
 ## Roles
 
 ### `provision/roles/aap_containerized_install`
@@ -68,6 +90,18 @@ Execution guidance:
 - Used by `build_custom_de.yml`.
 - Mirrors the EE build pattern for decision environments, including builder validation, registry setup, working-directory preparation, and build profile execution.
 
+### `provision/roles/import_custom_de`
+
+- Used by `import_custom_de.yml`.
+- Imports a prebuilt decision environment image, validates source image availability, tags it for the target registry, and pushes it to Automation Hub.
+- Reuses the same registry and TLS handling pattern as the custom DE build role but skips ansible-builder and image build steps.
+
+### `provision/roles/import_custom_ee`
+
+- Used by `import_custom_ee.yml`.
+- Imports prebuilt podman and oneagent execution environment images, validates source image availability, tags them for the target registry, and pushes them to Automation Hub.
+- Reuses the same registry and TLS handling pattern as the custom EE build role but skips ansible-builder and image build steps.
+
 ## AAP vs Plain Ansible Summary
 
 Prefer plain `ansible-playbook`:
@@ -77,3 +111,5 @@ Prefer plain `ansible-playbook`:
 - `seed_hub_collections_inner.yml`
 - `build_custom_ee.yml`
 - `build_custom_de.yml`
+- `import_custom_de.yml`
+- `import_custom_ee.yml`
