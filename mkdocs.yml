@@ -9,6 +9,7 @@ docs_dir: docs
 strict: true
 
 nav:
+  - Home: index.md
   - Overview: lab-guide/overview.md
   - Prerequisites: lab-guide/prerequisites.md
   - Provision: lab-guide/provision.md
