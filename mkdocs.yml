@@ -58,7 +58,7 @@ markdown_extensions:
   - toc:
       permalink: true
   - pymdownx.details
-  - pymdownx.superfences
+  - fenced_code
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite

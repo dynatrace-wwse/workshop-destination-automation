@@ -191,6 +191,8 @@ Expected result: command should fail with a sudo permission error.
 
 ## Step 7: Update the Machine Credential in AAP
 
+**Complete this step AFTER deploying AAP objects/configurations!**
+
 The AAP automation will create a Machine credential named `aap-service-account` without an SSH key. You need to add your `.pem` private key so AAP can authenticate as `aap-service-account` on the RHEL instance:
 
 1. **Log in to AAP** using your workshop credentials
