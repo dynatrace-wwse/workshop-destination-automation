@@ -11,8 +11,8 @@ ollama==0.3.1
 langchain==0.3.6
 langchain-community==0.3.5
 langchain-ollama==0.2.1
-langchain-core>=0.3.13,<0.4.0
-langchain-text-splitters>=0.3.0,<0.4.0
+langchain-core==0.3.63
+langchain-text-splitters==0.3.8
 
 # Vector Database (Weaviate)
 weaviate-client==4.20.4
@@ -26,17 +26,22 @@ python-dotenv==1.0.1
 prometheus-client==0.21.1
 
 # Observability & Logging
-opentelemetry-api>=1.38.0,<2.0
-opentelemetry-sdk>=1.38.0,<2.0
-opentelemetry-exporter-otlp>=1.38.0,<2.0
-opentelemetry-instrumentation>=0.59b0
-opentelemetry-instrumentation-fastapi>=0.59b0
-opentelemetry-instrumentation-requests>=0.59b0
-opentelemetry-instrumentation-sqlalchemy>=0.59b0
-opentelemetry-instrumentation-httpx>=0.59b0
-opentelemetry-instrumentation-grpc>=0.59b0
+opentelemetry-api==1.41.0
+opentelemetry-sdk==1.41.0
+opentelemetry-exporter-otlp==1.41.0
+opentelemetry-instrumentation==0.62b0
+opentelemetry-instrumentation-fastapi==0.62b0
+opentelemetry-instrumentation-requests==0.62b0
+opentelemetry-instrumentation-sqlalchemy==0.62b0
+opentelemetry-instrumentation-httpx==0.62b0
+opentelemetry-instrumentation-grpc==0.62b0
 python-json-logger==2.0.7
 traceloop-sdk==0.53.3
+# wrapt is a transitive dep of opentelemetry-instrumentation-langchain (via traceloop-sdk).
+# wrapt 2.x removed the module= keyword from wrap_function_wrapper(), breaking the
+# LangChain instrumentor and causing ChatOllama.chat spans to disappear.
+# Pin to the last 1.x release to keep the API intact.
+wrapt==1.17.2
 
 # Feature Flags
 openfeature-sdk==0.8.4
