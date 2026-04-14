@@ -5,7 +5,6 @@ This workshop walked through an end-to-end AI operations lifecycle using Dynatra
 ## What You Accomplished
 
 - Provisioned Red Hat AAP containerized on RHEL 9.
-- Built or imported execution images required for workshop automation.
 - Deployed Dynatrace components, including app/configuration integrations, EdgeConnect, and OneAgent.
 - Deployed the easyTravel AI Travel Advisor stack using Ansible-orchestrated Podman automation.
 - Observed AI workload behavior and compared outcomes after controlled runtime changes.

@@ -399,8 +399,10 @@ Dynatrace makes it possible to compare AI runtime inputs, outputs, performance, 
 
 ## Validation
 
-- [ ] Baseline and post-change observations are documented
-- [ ] Each automated change is traceable in AAP job history
-- [ ] Dynatrace clearly reflects behavior differences across changes
+- [ ] Baseline prompts were run in both **Direct LLM** and **RAG** modes with thumbs up/down feedback captured
+- [ ] Baseline notes include quality and behavior signals (relevance, specificity, consistency, latency, and feedback ratio)
+- [ ] An **AI Runtime** workflow execution in AAP changed `model`, `temperature`, and/or `rag_instructions`, and the job history was reviewed
+- [ ] The same prompts were re-run after the runtime change, and post-change observations were documented
+- [ ] Dynatrace Explorer traces and the **AI Model Versioning and A/B Testing** dashboard were used to compare performance, quality, and cost across runtime variants
 
 Continue to [Remediate](remediate.md).
