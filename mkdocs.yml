@@ -57,8 +57,8 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
-  - pymdownx.details
   - fenced_code
+  - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
