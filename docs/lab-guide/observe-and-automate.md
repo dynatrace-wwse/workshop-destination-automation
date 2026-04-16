@@ -134,6 +134,9 @@ This is where you analyze individual AI services in detail.
     - **Vulnerabilities** — Security and safety issues detected (e.g., prompt injection, jailbreak attempts).
     - **Traces and performance** — End-to-end call traces with detailed timing.
 
+!!! tip "OpenLLMetry"
+    OpenLLMetry is an open observability approach for LLM applications that captures prompt, response, model, token, latency, and retrieval metadata using OpenTelemetry-aligned telemetry. This turns AI behavior from a black box into measurable signals you can analyze for quality, performance, and cost. With this visibility, teams can detect drift, troubleshoot poor responses, compare model/runtime changes, and make evidence-based tuning decisions. In this workshop, OpenLLMetry-style instrumentation is exported through OpenTelemetry and ingested by Dynatrace AI Observability, where traces, spans, and AI metadata are correlated with infrastructure and application health for end-to-end analysis.
+
 ### Analyze a Prompt Trace
 
 1. In the Explorer tab for **ai-travel-advisor**, find the **Prompts** section.
@@ -147,6 +150,8 @@ This is where you analyze individual AI services in detail.
     - Latency breakdown
 4. Click **Open Distributed Trace** to view the full call flow.
 
+![Prompt Analysis](../assets/images/dynatrace-aiobs-service-prompts.png)
+
 **Explore the Distributed Trace**
 
 In the distributed trace view, examine:
@@ -158,6 +163,11 @@ In the distributed trace view, examine:
 - **Logs** — Any errors, warnings, or structured logs tied to the trace.
 
 Expand each span to understand its purpose and performance characteristics.
+
+![Gen AI Attributes](../assets/images/dynatrace-aiobs-distributed-trace-gen-ai.png)
+
+??? note "Gen AI Semantics"
+    The OpenTelemetry GenAI semantic conventions define a standardized vocabulary for AI telemetry so traces, metrics, and logs consistently describe prompts, responses, model identity, token usage, latency, and retrieval context across tools and vendors. OpenLLMetry builds on these conventions with practical instrumentation patterns for LLM applications, making AI behavior portable and comparable while allowing platforms like Dynatrace to correlate AI quality, performance, and cost end to end.
 
 ### Value of End-to-End Visibility
 
@@ -259,6 +269,8 @@ Execute the Workflow with New Parameters (Instructor Only)
     - **Example RAG instruction change:** Add a note like `"- Emphasize things to do at the office location"`
 4. Click **Next** → **Launch**.
 
+![Automate App AI Runtime](../assets/images/aap-automate-app-ai-runtime.png)
+
 The workflow job begins executing. You can monitor progress in real-time:
 
 - **Status bar** shows which stage is running.
@@ -349,6 +361,8 @@ In the context of AI models, A/B testing is crucial for assessing the impact of 
     - **Provider B** + **Model B**
 
 Use these selectors to compare the original model/runtime against the new one you deployed in Step 3.
+
+![AI Model Comparison](../assets/images/dynatrace-aiobs-comparison-dashboard.png)
 
 ??? tip "Data Sampling"
     **Data Sampling** means the dashboard may analyze a representative subset of total requests instead of every single request. This helps keep dashboards fast and responsive while still preserving statistically useful comparisons. Sampling is especially important when request volume is high or when dashboards are comparing multiple services, models, or time windows. A sampled view is still valuable for trends and relative comparisons, but you should remember that it may not represent every outlier. For deep incident analysis, always drill into the full traces for the specific prompts that matter most.
