@@ -167,7 +167,7 @@ Expand each span to understand its purpose and performance characteristics.
 ![Gen AI Attributes](../assets/images/dynatrace-aiobs-distributed-trace-gen-ai.png)
 
 ??? note "Gen AI Semantics"
-    The OpenTelemetry GenAI semantic conventions define a standardized vocabulary for AI telemetry so traces, metrics, and logs consistently describe prompts, responses, model identity, token usage, latency, and retrieval context across tools and vendors. OpenLLMetry builds on these conventions with practical instrumentation patterns for LLM applications, making AI behavior portable and comparable while allowing platforms like Dynatrace to correlate AI quality, performance, and cost end to end.
+    The OpenTelemetry [GenAI semantic conventions](https://docs.dynatrace.com/docs/observe/dynatrace-for-ai-observability/terms-and-concepts#opentelemetry-genai-semantic-conventions){target="_blank"} define a standardized vocabulary for AI telemetry so traces, metrics, and logs consistently describe prompts, responses, model identity, token usage, latency, and retrieval context across tools and vendors. OpenLLMetry builds on these conventions with practical instrumentation patterns for LLM applications, making AI behavior portable and comparable while allowing platforms like Dynatrace to correlate AI quality, performance, and cost end to end.
 
 ### Value of End-to-End Visibility
 
