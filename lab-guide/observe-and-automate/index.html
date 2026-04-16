@@ -1007,6 +1007,10 @@
 </ul>
 </li>
 </ol>
+<div class="admonition tip">
+<p class="admonition-title">OpenLLMetry</p>
+<p>OpenLLMetry is an open observability approach for LLM applications that captures prompt, response, model, token, latency, and retrieval metadata using OpenTelemetry-aligned telemetry. This turns AI behavior from a black box into measurable signals you can analyze for quality, performance, and cost. With this visibility, teams can detect drift, troubleshoot poor responses, compare model/runtime changes, and make evidence-based tuning decisions. In this workshop, OpenLLMetry-style instrumentation is exported through OpenTelemetry and ingested by Dynatrace AI Observability, where traces, spans, and AI metadata are correlated with infrastructure and application health for end-to-end analysis.</p>
+</div>
 <h3 id="analyze-a-prompt-trace">Analyze a Prompt Trace<a class="headerlink" href="#analyze-a-prompt-trace" title="Permanent link">&para;</a></h3>
 <ol>
 <li>In the Explorer tab for <strong>ai-travel-advisor</strong>, find the <strong>Prompts</strong> section.</li>
@@ -1022,6 +1026,7 @@
 </li>
 <li>Click <strong>Open Distributed Trace</strong> to view the full call flow.</li>
 </ol>
+<p><img alt="Prompt Analysis" src="../../assets/images/dynatrace-aiobs-service-prompts.png" /></p>
 <p><strong>Explore the Distributed Trace</strong></p>
 <p>In the distributed trace view, examine:</p>
 <ul>
@@ -1032,6 +1037,11 @@
 <li><strong>Logs</strong> — Any errors, warnings, or structured logs tied to the trace.</li>
 </ul>
 <p>Expand each span to understand its purpose and performance characteristics.</p>
+<p><img alt="Gen AI Attributes" src="../../assets/images/dynatrace-aiobs-distributed-trace-gen-ai.png" /></p>
+<details class="note">
+<summary>Gen AI Semantics</summary>
+<p>The OpenTelemetry GenAI semantic conventions define a standardized vocabulary for AI telemetry so traces, metrics, and logs consistently describe prompts, responses, model identity, token usage, latency, and retrieval context across tools and vendors. OpenLLMetry builds on these conventions with practical instrumentation patterns for LLM applications, making AI behavior portable and comparable while allowing platforms like Dynatrace to correlate AI quality, performance, and cost end to end.</p>
+</details>
 <h3 id="value-of-end-to-end-visibility">Value of End-to-End Visibility<a class="headerlink" href="#value-of-end-to-end-visibility" title="Permanent link">&para;</a></h3>
 <p>Being able to see the complete flow from user prompt to response—and the detailed breakdown of each step—enables:</p>
 <ul>
@@ -1144,6 +1154,7 @@
 </li>
 <li>Click <strong>Next</strong> → <strong>Launch</strong>.</li>
 </ol>
+<p><img alt="Automate App AI Runtime" src="../../assets/images/aap-automate-app-ai-runtime.png" /></p>
 <p>The workflow job begins executing. You can monitor progress in real-time:</p>
 <ul>
 <li><strong>Status bar</strong> shows which stage is running.</li>
@@ -1232,6 +1243,7 @@
 </li>
 </ol>
 <p>Use these selectors to compare the original model/runtime against the new one you deployed in Step 3.</p>
+<p><img alt="AI Model Comparison" src="../../assets/images/dynatrace-aiobs-comparison-dashboard.png" /></p>
 <details class="tip">
 <summary>Data Sampling</summary>
 <p><strong>Data Sampling</strong> means the dashboard may analyze a representative subset of total requests instead of every single request. This helps keep dashboards fast and responsive while still preserving statistically useful comparisons. Sampling is especially important when request volume is high or when dashboards are comparing multiple services, models, or time windows. A sampled view is still valuable for trends and relative comparisons, but you should remember that it may not represent every outlier. For deep incident analysis, always drill into the full traces for the specific prompts that matter most.</p>
