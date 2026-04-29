@@ -1,0 +1,94 @@
+---
+- name: Resolve rootless podman storage paths used by AAP
+  ansible.builtin.set_fact:
+    aap_podman_root: "{{ aap_xdg_data_home }}/containers/storage"
+    aap_podman_runroot: "/run/user/{{ ansible_user_uid }}/containers"
+
+- name: Check running podman containers for MCP
+  ansible.builtin.command:
+    argv:
+      - podman
+      - --root
+      - "{{ aap_podman_root }}"
+      - --runroot
+      - "{{ aap_podman_runroot }}"
+      - ps
+      - --format
+      - json
+  register: aap_mcp_podman_ps
+  changed_when: false
+
+- name: Parse container list for MCP checks
+  ansible.builtin.set_fact:
+    aap_mcp_running_containers: "{{ (aap_mcp_podman_ps.stdout | default('[]')) | from_json }}"
+    aap_mcp_container_names: "{{ ((aap_mcp_podman_ps.stdout | default('[]')) | from_json) | map(attribute='Names') | map('first') | list }}"
+
+- name: Validate MCP container is running
+  ansible.builtin.assert:
+    that:
+      - aap_mcp_container_names | select('search', 'ansiblemcp|mcp') | list | length > 0
+    fail_msg: >-
+      Expected an MCP container to be running but none matched names containing
+      'ansiblemcp' or 'mcp'. This usually means MCP was not deployed yet.
+      The role now reruns the installer when MCP is enabled but missing.
+      Re-run the playbook once so installer reconciliation can create MCP components.
+
+- name: Wait for MCP HTTPS endpoint to respond
+  ansible.builtin.uri:
+    url: "{{ aap_mcp_base_url }}/"
+    method: GET
+    status_code:
+      - 200
+      - 401
+      - 404
+      - 405
+    validate_certs: false
+  register: aap_mcp_endpoint_check
+  until: aap_mcp_endpoint_check is succeeded
+  retries: 30
+  delay: 10
+  timeout: 300
+
+- name: Probe MCP toolset endpoint using generated admin token
+  ansible.builtin.uri:
+    url: "{{ aap_mcp_base_url }}/system_monitoring/mcp"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ aap_admin_token }}"
+    status_code:
+      - 200
+      - 400
+      - 401
+      - 403
+      - 404
+      - 405
+      - 406
+    validate_certs: false
+  register: aap_mcp_auth_probe
+  no_log: true
+
+- name: Ensure MCP token probe is authorized
+  ansible.builtin.assert:
+    that:
+      - aap_mcp_auth_probe.status not in [401, 403]
+    fail_msg: Generated admin token was rejected by MCP endpoint (HTTP {{ aap_mcp_auth_probe.status }}).
+  no_log: true
+
+- name: Display MCP validation summary
+  ansible.builtin.debug:
+    msg: |
+      MCP Validation Complete
+
+      MCP Base URL:
+        {{ aap_mcp_base_url }}
+
+      MCP Toolset Probe:
+        {{ aap_mcp_base_url }}/system_monitoring/mcp
+
+      Token File:
+        {{ aap_admin_token_file }}
+
+      Detected MCP Containers:
+      {% for name in aap_mcp_container_names %}
+        - {{ name }}
+      {% endfor %}

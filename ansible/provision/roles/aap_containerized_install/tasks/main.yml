@@ -29,6 +29,18 @@
   ansible.builtin.include_tasks: validate_install.yml
   when: aap_run_installer
 
+- name: Generate admin API token for MCP validation
+  ansible.builtin.include_tasks: generate_admin_token.yml
+  when:
+    - aap_run_installer
+    - aap_mcp_install | bool
+
+- name: Validate MCP service and token access
+  ansible.builtin.include_tasks: validate_mcp.yml
+  when:
+    - aap_run_installer
+    - aap_mcp_install | bool
+
 - name: Log in to local registry for follow-on EE builds
   ansible.builtin.include_tasks:
     file: login_local_registry.yml
