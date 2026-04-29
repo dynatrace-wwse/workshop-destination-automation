@@ -707,12 +707,12 @@ aap_automate_app_ai_embedding_job_template_ask_variables_on_launch: true
 # app_ai_embedding_model_requested: Specify the embedding model override. Supported: nomic-embed-text, qwen2.5:0.5b-instruct-q4_K_M, llama3.2:1b-instruct-q4_K_M, gemma3:1b-it-qat, orca-mini:3b
 aap_automate_app_ai_embedding_job_template_extra_vars:
   target_hosts: "{{ aap_job_template_target_hosts }}"
-  app_ai_embedding_model_requested: "qwen2.5:0.5b-instruct-q4_K_M"
+  app_ai_embedding_model_requested: "gemma3:1b-it-qat"
 # YAML string version — comments are preserved when patched directly to the AAP API
 aap_automate_app_ai_embedding_job_template_extra_vars_yaml: |
   # Embedding model override. Supported: nomic-embed-text, qwen2.5:0.5b-instruct-q4_K_M, llama3.2:1b-instruct-q4_K_M, gemma3:1b-it-qat, orca-mini:3b
   # Default embedding model override used by the automate job template.
-  app_ai_embedding_model_requested: "qwen2.5:0.5b-instruct-q4_K_M"
+  app_ai_embedding_model_requested: "gemma3:1b-it-qat"
   target_hosts: "{{ aap_job_template_target_hosts }}"
 
 # Job template for app AI embedding model remediation (remediate / reset to correct model)

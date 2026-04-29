@@ -21,16 +21,6 @@
   gather_facts: true
 
   tasks:
-    - name: "Normalize controller host URL for EDA token call"
-      ansible.builtin.set_fact:
-        aap_controller_host_normalized: >-
-          {{
-            (
-              (aap_controller_host | trim)
-              if ((aap_controller_host | trim) is match('^https?://'))
-              else ('https://' ~ (aap_controller_host | trim))
-            ) | regex_replace('/+$', '')
-          }}
 
     - name: "Configure EDA objects"
       ansible.builtin.include_role:
