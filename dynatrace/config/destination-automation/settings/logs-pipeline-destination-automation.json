@@ -3,7 +3,18 @@
   "customId": "pipeline_destination-automation-logs_8401",
   "displayName": "destination-automation-logs",
   "processing": {
-    "processors": []
+    "processors": [
+      {
+        "id": "processor_Container_Syslog_Content_6342",
+        "enabled": true,
+        "description": "Container Syslog Content",
+        "type": "dql",
+        "matcher": "matchesValue(log.source,\"/var/log/messages\") and matchesPhrase(content,\"name\") and matchesPhrase(content,\"message\") and matchesPhrase(content,\"level\")",
+        "dql": {
+            "script": "parse content, \"LD JSON:nested_content\"\n| fieldsAdd name = nested_content[`name`], message = nested_content[`message`], loglevel = upper(nested_content[`level`])"
+        }
+      }
+    ]
   },
   "securityContext": {
     "processors": []

@@ -116,9 +116,18 @@ configs:
         schema: builtin:oneagent.features
         schemaVersion: "1.5.10"
         scope: environment
-  - id: journald-log-storage
+  - id: syslog-log-storage
     config:
-      template: journald-log-storage.json
+      template: syslog-log-storage.json
+      skip: false
+    type:
+      settings:
+        schema: builtin:logmonitoring.log-storage-settings
+        schemaVersion: "1.0.18"
+        scope: environment
+  - id: journald-exclude-log-storage
+    config:
+      template: journald-exclude-log-storage.json
       skip: false
     type:
       settings:
