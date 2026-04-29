@@ -70,3 +70,6 @@ extra_css:
   - assets/stylesheets/brand.css
 
 copyright: Copyright 2026 Dynatrace and Red Hat workshop contributors
+
+extra:
+  rum_snippet: "https://js-cdn.dynatrace.com/jstag/1612cf70810/bf81393wlb/b4880a56c97a2f47_complete.js"
