@@ -1,0 +1,51 @@
+---
+- name: Ensure admin token directory exists
+  ansible.builtin.file:
+    path: "{{ aap_admin_token_file | dirname }}"
+    state: directory
+    mode: '0700'
+    owner: "{{ aap_install_user }}"
+    group: "{{ aap_install_user }}"
+  become: true
+
+- name: Create admin personal access token for MCP usage
+  ansible.builtin.uri:
+    url: "https://{{ aap_public_hostname }}/api/controller/v2/tokens/"
+    method: POST
+    user: admin
+    password: "{{ aap_admin_password }}"
+    force_basic_auth: true
+    body_format: json
+    body:
+      description: "{{ aap_admin_token_description }}"
+      scope: "{{ aap_admin_token_scope }}"
+      application: null
+    status_code:
+      - 201
+    validate_certs: false
+  register: aap_admin_token_create
+  no_log: true
+
+- name: Validate token creation response
+  ansible.builtin.assert:
+    that:
+      - aap_admin_token_create.json is defined
+      - aap_admin_token_create.json.token is defined
+      - (aap_admin_token_create.json.token | string | length) > 0
+    fail_msg: Controller did not return an admin token for MCP validation.
+  no_log: true
+
+- name: Persist admin token for workshop validation workflows
+  ansible.builtin.copy:
+    dest: "{{ aap_admin_token_file }}"
+    content: "{{ aap_admin_token_create.json.token }}\n"
+    owner: "{{ aap_install_user }}"
+    group: "{{ aap_install_user }}"
+    mode: '0600'
+  become: true
+  no_log: true
+
+- name: Store admin token in role facts for subsequent MCP checks
+  ansible.builtin.set_fact:
+    aap_admin_token: "{{ aap_admin_token_create.json.token }}"
+  no_log: true
