@@ -76,9 +76,13 @@ Execution guidance:
   - run preflight checks
   - prepare the host OS
   - stage the installer and extracted content
-  - build the installer inventory
-  - execute the installer
+  - build the installer inventory (including optional `[ansiblemcp]` group and MCP `[all:vars]` entries)
+  - execute the installer (reruns reconciliation if MCP is enabled but not yet deployed)
   - validate the resulting AAP installation
+  - generate an admin Personal Access Token (PAT) for MCP access and persist it to `AAP_ADMIN_TOKEN_FILE`
+  - validate the MCP server container, HTTPS endpoint on port 8448, and token-authenticated toolset access
+- Toggle MCP deployment with the `AAP_INSTALL_MCP_SERVER` environment variable (default: `true`).
+- See [aap_containerized_quickstart.md](aap_containerized_quickstart.md) for MCP environment variables and post-install token usage.
 
 ### `provision/roles/build_custom_ee`
 

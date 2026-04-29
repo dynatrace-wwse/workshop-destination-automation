@@ -57,6 +57,16 @@ export AAP_BUNDLE_INSTALL="true"
 export AAP_HUB_SEED="false"
 export AAP_HUB_SEED_COLLECTIONS="[]"
 
+# Ansible MCP server (AAP 2.6 Tech Preview)
+# Set to false to skip MCP deployment. Defaults to true.
+export AAP_INSTALL_MCP_SERVER="true"
+# MCP write access (allows AI agents to launch jobs and modify resources)
+export AAP_MCP_ALLOW_WRITE_OPERATIONS="true"
+# Bypass SSL/TLS certificate validation (required for self-signed certs)
+export AAP_MCP_IGNORE_CERTIFICATE_ERRORS="true"
+# Path where the generated admin PAT for MCP access is written
+export AAP_ADMIN_TOKEN_FILE="/tmp/workshop-destination-automation-passwords/aap_admin_token"
+
 # Optional generated inventory destination
 export AAP_INVENTORY_OUTPUT_PATH="/opt/ansible/inventory-workshop"
 
@@ -98,6 +108,10 @@ Key examples used by `aap_containerized_install`:
 | `AAP_HUB_SEED_COLLECTIONS` | `AAP_HUB_SEED_COLLECTIONS` -> empty -> rendered as `[]` in generated inventory |
 | `AAP_MANAGE_FIREWALL` | `AAP_MANAGE_FIREWALL` -> `false` |
 | `AAP_REGISTER_RHSM` | `AAP_REGISTER_RHSM` -> `false` |
+| `AAP_INSTALL_MCP_SERVER` | `AAP_INSTALL_MCP_SERVER` -> `true` |
+| `AAP_MCP_ALLOW_WRITE_OPERATIONS` | `AAP_MCP_ALLOW_WRITE_OPERATIONS` -> `true` |
+| `AAP_MCP_IGNORE_CERTIFICATE_ERRORS` | `AAP_MCP_IGNORE_CERTIFICATE_ERRORS` -> `true` |
+| `AAP_ADMIN_TOKEN_FILE` | `AAP_ADMIN_TOKEN_FILE` -> `/tmp/workshop-destination-automation-passwords/aap_admin_token` |
 | `RHSM_USERNAME` | `RHSM_USERNAME` -> empty string |
 | `RHSM_PASSWORD` | `RHSM_PASSWORD` -> empty string |
 | `RHSM_ACTIVATION_KEY` | `RHSM_ACTIVATION_KEY` -> empty string |
@@ -169,8 +183,54 @@ ansible-playbook provision/playbooks/install_aap_containerized.yml -K
 2. For bundled installs, generated inventory includes `bundle_install=true` and computed `bundle_dir`.
 3. Generated inventory sets `hub_seed=false` and `hub_seed_collections=[]` by default.
 4. Installer execution is run with `XDG_DATA_HOME=/opt/ansible/aap/xdg` by default to avoid placing container assets under `/home/<user>`.
-5. Installer execution is skipped if `controller_data_dir` already exists.
+5. Installer execution is skipped if `controller_data_dir` already exists **and** the MCP service unit is already present (when MCP is enabled).
 6. To force a reinstall, clean previous AAP runtime data and rerun.
+7. MCP deployment is a Tech Preview feature in AAP 2.6. Set `AAP_INSTALL_MCP_SERVER=false` to skip it if your installer bundle version predates MCP support.
+
+## Ansible MCP server
+
+When `AAP_INSTALL_MCP_SERVER=true` (the default), the role adds the `[ansiblemcp]` group to the generated installer inventory and deploys the Ansible MCP server alongside the rest of the platform.
+
+### What gets provisioned
+
+- An `ansiblemcp` container running on the same host.
+- MCP HTTPS endpoint exposed on **port 8448**: `https://<AAP_PUBLIC_HOSTNAME>:8448`
+- An admin Personal Access Token (PAT) written to `AAP_ADMIN_TOKEN_FILE` (default: `/tmp/workshop-destination-automation-passwords/aap_admin_token`) with mode `0600`.
+
+### Inventory variables set automatically
+
+```ini
+mcp_allow_write_operations=true
+mcp_ignore_certificate_errors=true
+```
+
+### Post-install validation
+
+After MCP deployment the role automatically:
+
+1. Confirms the `ansiblemcp` container is running via `podman ps`.
+2. Polls `https://<host>:8448/` until it responds (up to 5 minutes).
+3. Probes `https://<host>:8448/system_monitoring/mcp` using the generated admin token to confirm authorized access.
+
+### Using the MCP token
+
+```bash
+# Read the generated admin token
+cat /tmp/workshop-destination-automation-passwords/aap_admin_token
+
+# Example: probe the system_monitoring toolset
+curl -sk -H "Authorization: Bearer $(cat /tmp/workshop-destination-automation-passwords/aap_admin_token)" \
+  https://<AAP_PUBLIC_HOSTNAME>:8448/system_monitoring/mcp
+```
+
+### Skipping MCP deployment
+
+```bash
+export AAP_INSTALL_MCP_SERVER=false
+ansible-playbook provision/playbooks/install_aap_containerized.yml
+```
+
+When disabled, the `[ansiblemcp]` group is omitted from the generated inventory and all MCP-related tasks (token generation, endpoint validation) are skipped.
 
 ## Optional post-install Automation Hub seeding
 
