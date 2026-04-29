@@ -4,6 +4,37 @@
     path: "{{ aap_controller_data_dir }}"
   register: aap_controller_data_dir_stat
 
+- name: Detect whether MCP service units already exist
+  ansible.builtin.shell: >-
+    systemctl --user list-unit-files --type=service --no-legend --no-pager
+    | awk '{print $1}'
+    | grep -E '^(automation-mcp|ansible-mcp).*\.service$'
+  args:
+    executable: /bin/bash
+  register: aap_mcp_units_detect
+  changed_when: false
+  failed_when: false
+  when:
+    - aap_controller_data_dir_stat.stat.exists
+    - aap_mcp_install | bool
+
+- name: Determine whether installer should run
+  ansible.builtin.set_fact:
+    aap_should_run_installer: >-
+      {{
+        (not aap_controller_data_dir_stat.stat.exists)
+        or
+        (
+          (aap_mcp_install | bool)
+          and
+          (
+            aap_mcp_units_detect is not defined
+            or aap_mcp_units_detect.rc != 0
+            or (aap_mcp_units_detect.stdout | trim | length == 0)
+          )
+        )
+      }}
+
 - name: Enforce non-root installer execution user
   ansible.builtin.assert:
     that:
@@ -12,14 +43,14 @@
       Installer execution is intentionally restricted to a non-root user.
       Set AAP_INSTALL_USER to a regular account and rerun. If you must run
       installer steps as root, modify this role locally to remove this guard.
-  when: not aap_controller_data_dir_stat.stat.exists
+  when: aap_should_run_installer
 
 - name: Announce non-root installer execution context
   ansible.builtin.debug:
     msg: >-
       Running AAP containerized installer as non-root user '{{ aap_install_user }}'
       (not root) by design.
-  when: not aap_controller_data_dir_stat.stat.exists
+  when: aap_should_run_installer
 
 - name: Resolve installer log path
   ansible.builtin.set_fact:
@@ -29,7 +60,7 @@
         if (aap_installer_log_path | length > 0)
         else (aap_installer_extracted_dir + '/aap_install.log')
       }}
-  when: not aap_controller_data_dir_stat.stat.exists
+  when: aap_should_run_installer
 
 - name: Ensure installer log file exists and is user-owned
   ansible.builtin.file:
@@ -38,7 +69,7 @@
     owner: "{{ aap_install_user }}"
     group: "{{ aap_install_user }}"
     mode: "0644"
-  when: not aap_controller_data_dir_stat.stat.exists
+  when: aap_should_run_installer
 
 - name: Announce installer log monitoring
   ansible.builtin.debug:
@@ -46,7 +77,7 @@
       Nested installer output will be written to {{ aap_effective_installer_log_path }}.
       This role will print recent log excerpts every {{ aap_installer_monitor_delay }} seconds
       while the installer is running.
-  when: not aap_controller_data_dir_stat.stat.exists
+  when: aap_should_run_installer
 
 - name: Run containerized installer playbook
   ansible.builtin.shell: >-
@@ -65,15 +96,15 @@
   poll: 0
   register: aap_install_async
   changed_when: true
-  when: not aap_controller_data_dir_stat.stat.exists
+  when: aap_should_run_installer
 
 - name: Monitor containerized installer progress
   ansible.builtin.include_tasks: monitor_installer.yml
-  when: not aap_controller_data_dir_stat.stat.exists
+  when: aap_should_run_installer
 
 - name: Installer already appears present
   ansible.builtin.debug:
     msg: >-
-      Skipping installer execution because {{ aap_controller_data_dir }} already exists.
-      Set AAP_RUN_INSTALLER=true and remove that directory if you need a reinstall.
-  when: aap_controller_data_dir_stat.stat.exists
+      Skipping installer execution because {{ aap_controller_data_dir }} already exists
+      and MCP service units were detected for this user.
+  when: not aap_should_run_installer

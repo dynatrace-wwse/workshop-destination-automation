@@ -19,6 +19,11 @@
 [database]
 {{ aap_private_hostname }} ansible_connection=local ansible_user={{ aap_install_user }}
 
+{% if aap_mcp_install %}
+[ansiblemcp]
+{{ aap_mcp_host }} ansible_connection=local ansible_user={{ aap_install_user }}
+{% endif %}
+
 [all:vars]
 postgresql_admin_username={{ aap_postgresql_admin_username }}
 postgresql_admin_password={{ aap_postgresql_admin_password }}
@@ -75,3 +80,12 @@ eda_pg_database=ansibleeda
 eda_pg_username=admin
 eda_pg_password={{ aap_admin_password }}
 eda_pg_is_external=false
+
+mcp_allow_write_operations={{ aap_mcp_allow_write_operations | ternary('true', 'false') }}
+mcp_ignore_certificate_errors={{ aap_mcp_ignore_certificate_errors | ternary('true', 'false') }}
+{% if aap_mcp_tls_cert | length > 0 %}
+mcp_tls_cert={{ aap_mcp_tls_cert }}
+{% endif %}
+{% if aap_mcp_tls_key | length > 0 %}
+mcp_tls_key={{ aap_mcp_tls_key }}
+{% endif %}
