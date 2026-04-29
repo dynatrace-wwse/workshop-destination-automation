@@ -20,36 +20,50 @@ Reference guide:
 
 Run the bootstrap playbooks from the ansible directory.
 
+??? tip "Workshop Participant Count"
+    By default, a single workshop participant user login is created.  You can change the number of participant user logins created by setting the environment variable `AAP_PARTICIPANT_COUNT`.
+    For example, you can generate `5` participant user logins using:
+
+    ```
+    export AAP_PARTICIPANT_COUNT=5
+    ```
+
+    You'll find the credentials in the `/tmp/workshop-destination-automation-passwords/` directory (by default).
+
+Deploy Automation Execution (Automation Controller) objects:
+
 ```bash
 cd ~/workshop-destination-automation/ansible
 ansible-playbook deploy/playbooks/configure_aap.yml
 ```
 
+Deploy Automation Decisions (Event-Driven Ansible) objects:
+
 ```bash
 ansible-playbook deploy/playbooks/configure_eda.yml
 ```
 
-After playbook completion, review credentials and inventory objects in the AAP UI.
+After playbook completion, review credentials and inventory objects in the AAP UI.  You'll need to manually update the following credentials in the UI.
 
 **Apply Credentials via UI**
 
-- [ ] aap-service-account
+- aap-service-account
 
 ![aap-service-account](../assets/images/aap-credential-aap-service-account.png)
 
-- [ ] destination-automation-dynatrace-monaco
+- destination-automation-dynatrace-monaco
 
 ![dynatrace monaco](../assets/images/aap-credential-dynatrace-monaco.png)
 
-- [ ] destination-automation-dynatrace-oauth
+- destination-automation-dynatrace-oauth
 
 ![dynatrace oauth](../assets/images/aap-credential-dynatrace-oauth.png)
 
-- [ ] destination-automation-dynatrace-oneagent
+- destination-automation-dynatrace-oneagent
 
 ![dynatrace oneagent](../assets/images/aap-credential-dynatrace-oneagent.png)
 
-- [ ] destination-automation-dynatrace-otlp
+- destination-automation-dynatrace-otlp
 
 ![dynatrace otlp](../assets/images/aap-credential-dynatrace-otlp.png)
 
@@ -70,6 +84,9 @@ Launch the relevant AAP job templates for:
 
 - Dynatrace AppEngine apps
     - `destination-automation-deploy-dynatrace-apps`
+- Dynatrace API config objects
+    - `destination-automation-deploy-dynatrace-api-config`
+    - Contains objects that aren't currently supported by Monaco
 - Dynatrace Monaco project
     - `destination-automation-deploy-dynatrace-monaco`
 - Dynatrace EdgeConnect (when private network connectivity requires it)
