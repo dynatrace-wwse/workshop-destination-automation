@@ -1,0 +1,34 @@
+---
+- name: Test MCP certificate generation
+  hosts: localhost
+  connection: local
+  vars_files:
+    - provision/roles/aap_containerized_install/defaults/main.yml
+  vars:
+    aap_admin_password: "@nsible@utomates"
+  tasks:
+    - name: Show variables and conditions
+      ansible.builtin.debug:
+        msg:
+          - "aap_mcp_install: {{ aap_mcp_install }} (bool: {{ aap_mcp_install | bool }})"
+          - "aap_mcp_tls_cert: '{{ aap_mcp_tls_cert }}' (length: {{ aap_mcp_tls_cert | length }})"
+          - "aap_mcp_tls_key: '{{ aap_mcp_tls_key }}' (length: {{ aap_mcp_tls_key | length }})"
+          - "aap_mcp_san_records: {{ aap_mcp_san_records }} (length: {{ aap_mcp_san_records | length }})"
+          - "aap_private_hostname: '{{ aap_private_hostname }}'"
+          - "aap_public_hostname: '{{ aap_public_hostname }}'"
+          - "AAP_PUBLIC_HOSTNAME env: '{{ lookup('ansible.builtin.env', 'AAP_PUBLIC_HOSTNAME') }}'"
+          - "Condition 1 (aap_mcp_install): {{ aap_mcp_install | bool }}"
+          - "Condition 2 (cert empty): {{ aap_mcp_tls_cert | length == 0 }}"
+          - "Condition 3 (key empty): {{ aap_mcp_tls_key | length == 0 }}"
+          - "Condition 4 (san records): {{ aap_mcp_san_records | length > 0 }}"
+          - "All conditions met: {{ (aap_mcp_install | bool) and (aap_mcp_tls_cert | length == 0) and (aap_mcp_tls_key | length == 0) and (aap_mcp_san_records | length > 0) }}"
+    
+    - name: Check if AAP CA exists
+      ansible.builtin.stat:
+        path: "{{ aap_base_dir }}/tls/ca.cert"
+      register: _ca_check
+      become: true
+    
+    - name: Show CA status
+      ansible.builtin.debug:
+        msg: "AAP CA exists: {{ _ca_check.stat.exists }}"
