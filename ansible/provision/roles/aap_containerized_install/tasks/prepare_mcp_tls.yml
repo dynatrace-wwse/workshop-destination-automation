@@ -1,0 +1,118 @@
+---
+- name: Generate custom MCP TLS certificate with multiple SANs
+  when:
+    - aap_mcp_install | bool
+    - aap_mcp_tls_cert | length == 0
+    - aap_mcp_tls_key | length == 0
+    - aap_mcp_san_records | length > 0
+  block:
+    - name: Check if AAP CA certificate exists (from previous installation)
+      ansible.builtin.stat:
+        path: "{{ aap_base_dir }}/tls/ca.cert"
+      register: _aap_ca_stat
+      become: true
+
+    - name: Skip custom MCP cert if CA doesn't exist (fresh install)
+      ansible.builtin.debug:
+        msg: "AAP CA not found - skipping custom MCP cert generation. Installer will create default cert."
+      when: not _aap_ca_stat.stat.exists
+
+    - name: Generate CA-signed MCP certificate
+      when: _aap_ca_stat.stat.exists
+      block:
+        - name: Create MCP TLS certificate directory
+          ansible.builtin.file:
+            path: "{{ aap_base_dir }}/mcp-tls"
+            state: directory
+            owner: "{{ aap_install_user }}"
+            group: "{{ aap_install_user }}"
+            mode: '0750'
+          become: true
+
+        - name: Install openssl for certificate generation
+          ansible.builtin.package:
+            name: openssl
+            state: present
+          become: true
+
+        - name: Generate MCP private key
+          ansible.builtin.shell: |
+            openssl genrsa -out {{ aap_base_dir }}/mcp-tls/ansiblemcp.key 2048
+            chmod 0400 {{ aap_base_dir }}/mcp-tls/ansiblemcp.key
+            chown {{ aap_install_user }}:{{ aap_install_user }} {{ aap_base_dir }}/mcp-tls/ansiblemcp.key
+          args:
+            creates: "{{ aap_base_dir }}/mcp-tls/ansiblemcp.key"
+          become: true
+
+        - name: Build SAN list for OpenSSL config
+          ansible.builtin.set_fact:
+            _mcp_san_list: "{{ aap_mcp_san_records | map('regex_replace', '^DNS:', '') | list }}"
+
+        - name: Create OpenSSL config file with SANs
+          ansible.builtin.copy:
+            dest: "{{ aap_base_dir }}/mcp-tls/openssl.cnf"
+            owner: "{{ aap_install_user }}"
+            group: "{{ aap_install_user }}"
+            mode: '0644'
+            content: |
+              [req]
+              default_bits = 2048
+              prompt = no
+              default_md = sha256
+              distinguished_name = dn
+              req_extensions = v3_req
+              
+              [dn]
+              C=US
+              ST=North Carolina
+              L=Raleigh
+              O=Red Hat
+              OU=Ansible
+              CN={{ aap_private_hostname }}
+              
+              [v3_req]
+              subjectAltName = @alt_names
+              
+              [alt_names]
+              {% for san in _mcp_san_list %}
+              DNS.{{ loop.index }} = {{ san }}
+              {% endfor %}
+          become: true
+
+        - name: Generate MCP certificate signing request with custom SANs
+          ansible.builtin.shell: |
+            openssl req -new -key {{ aap_base_dir }}/mcp-tls/ansiblemcp.key \
+              -out {{ aap_base_dir }}/mcp-tls/ansiblemcp.csr \
+              -config {{ aap_base_dir }}/mcp-tls/openssl.cnf
+            chmod 0640 {{ aap_base_dir }}/mcp-tls/ansiblemcp.csr
+            chown {{ aap_install_user }}:{{ aap_install_user }} {{ aap_base_dir }}/mcp-tls/ansiblemcp.csr
+          args:
+            creates: "{{ aap_base_dir }}/mcp-tls/ansiblemcp.csr"
+          become: true
+
+        - name: Sign MCP certificate with AAP CA
+          ansible.builtin.shell: |
+            openssl x509 -req -days 365 \
+              -in {{ aap_base_dir }}/mcp-tls/ansiblemcp.csr \
+              -CA {{ aap_base_dir }}/tls/ca.cert \
+              -CAkey {{ aap_base_dir }}/tls/ca.key \
+              -CAcreateserial \
+              -out {{ aap_base_dir }}/mcp-tls/ansiblemcp.cert \
+              -extensions v3_req \
+              -extfile {{ aap_base_dir }}/mcp-tls/openssl.cnf
+            chmod 0640 {{ aap_base_dir }}/mcp-tls/ansiblemcp.cert
+            chown {{ aap_install_user }}:{{ aap_install_user }} {{ aap_base_dir }}/mcp-tls/ansiblemcp.cert
+          args:
+            creates: "{{ aap_base_dir }}/mcp-tls/ansiblemcp.cert"
+          become: true
+
+        - name: Set MCP TLS certificate paths for installer
+          ansible.builtin.set_fact:
+            aap_mcp_tls_cert: "{{ aap_base_dir }}/mcp-tls/ansiblemcp.cert"
+            aap_mcp_tls_key: "{{ aap_base_dir }}/mcp-tls/ansiblemcp.key"
+
+        - name: Display MCP certificate SANs
+          ansible.builtin.debug:
+            msg: >-
+              Custom MCP TLS certificate generated with SANs:
+              {{ aap_mcp_san_records | join(', ') }}
