@@ -30,6 +30,7 @@ postgresql_admin_password={{ aap_postgresql_admin_password }}
 bundle_install={{ aap_bundle_install | ternary('true', 'false') }}
 {% if aap_bundle_install %}
 bundle_dir={{ aap_bundle_dir }}
+registry_auth=false
 {% endif %}
 redis_mode={{ aap_redis_mode }}
 
