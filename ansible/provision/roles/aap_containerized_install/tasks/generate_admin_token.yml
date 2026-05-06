@@ -8,9 +8,9 @@
     group: "{{ aap_install_user }}"
   become: true
 
-- name: Create admin personal access token for MCP usage
+- name: Create admin platform API token for MCP usage
   ansible.builtin.uri:
-    url: "https://{{ aap_public_hostname }}/api/controller/v2/tokens/"
+    url: "https://{{ aap_public_hostname }}/api/gateway/v1/tokens/"
     method: POST
     user: admin
     password: "{{ aap_admin_password }}"

@@ -1,0 +1,152 @@
+---
+- name: Regenerate MCP certificate with custom SANs (post-install)
+  when:
+    - aap_mcp_install | bool
+    - aap_public_hostname | length > 0
+  block:
+    - name: Set AAP runtime base directory
+      ansible.builtin.set_fact:
+        _aap_runtime_base: "{{ ansible_env.HOME }}/aap"
+
+    - name: Check if AAP CA exists at runtime location
+      ansible.builtin.stat:
+        path: "{{ _aap_runtime_base }}/tls/ca.cert"
+      register: _runtime_ca_stat
+
+    - name: Check if MCP certificate directory exists
+      ansible.builtin.stat:
+        path: "{{ _aap_runtime_base }}/ansiblemcp/etc"
+      register: _mcp_cert_dir_stat
+
+    - name: Show detection results
+      ansible.builtin.debug:
+        msg:
+          - "AAP runtime base: {{ _aap_runtime_base }}"
+          - "CA exists: {{ _runtime_ca_stat.stat.exists }}"
+          - "MCP cert dir exists: {{ _mcp_cert_dir_stat.stat.exists }}"
+          - "Will regenerate cert with SANs: DNS:{{ aap_private_hostname }}, DNS:{{ aap_public_hostname }}"
+
+    - name: Regenerate MCP certificate with both SANs
+      when: _runtime_ca_stat.stat.exists
+      block:
+        - name: Create temp directory for new certificate
+          ansible.builtin.tempfile:
+            state: directory
+            suffix: .mcp_cert
+          register: _cert_temp_dir
+
+        - name: Generate new MCP private key
+          ansible.builtin.shell: |
+            openssl genrsa -out {{ _cert_temp_dir.path }}/ansiblemcp.key 2048
+            chmod 0400 {{ _cert_temp_dir.path }}/ansiblemcp.key
+          args:
+            creates: "{{ _cert_temp_dir.path }}/ansiblemcp.key"
+
+        - name: Create OpenSSL config with both SANs
+          ansible.builtin.copy:
+            dest: "{{ _cert_temp_dir.path }}/openssl.cnf"
+            content: |
+              [req]
+              default_bits = 2048
+              prompt = no
+              default_md = sha256
+              distinguished_name = dn
+              req_extensions = v3_req
+
+              [dn]
+              CN = {{ aap_mcp_host }}
+              O = Red Hat Ansible Automation Platform
+              OU = MCP Server
+
+              [v3_req]
+              keyUsage = critical, digitalSignature, keyEncipherment
+              extendedKeyUsage = serverAuth
+              subjectAltName = @alt_names
+
+              [alt_names]
+              DNS.1 = {{ aap_private_hostname }}
+              DNS.2 = {{ aap_public_hostname }}
+            mode: '0644'
+
+        - name: Generate certificate signing request
+          ansible.builtin.shell: |
+            openssl req -new \
+              -key {{ _cert_temp_dir.path }}/ansiblemcp.key \
+              -out {{ _cert_temp_dir.path }}/ansiblemcp.csr \
+              -config {{ _cert_temp_dir.path }}/openssl.cnf
+
+        - name: Sign certificate with AAP CA
+          ansible.builtin.shell: |
+            openssl x509 -req \
+              -in {{ _cert_temp_dir.path }}/ansiblemcp.csr \
+              -CA {{ _aap_runtime_base }}/tls/ca.cert \
+              -CAkey {{ _aap_runtime_base }}/tls/ca.key \
+              -CAcreateserial \
+              -out {{ _cert_temp_dir.path }}/ansiblemcp.cert \
+              -days 365 \
+              -sha256 \
+              -extensions v3_req \
+              -extfile {{ _cert_temp_dir.path }}/openssl.cnf
+
+        - name: Verify certificate SANs
+          ansible.builtin.shell: |
+            openssl x509 -in {{ _cert_temp_dir.path }}/ansiblemcp.cert -text -noout | grep -A2 "Subject Alternative Name"
+          register: _cert_sans
+          changed_when: false
+
+        - name: Display new certificate SANs
+          ansible.builtin.debug:
+            msg: "{{ _cert_sans.stdout_lines }}"
+
+        - name: Backup existing MCP certificate
+          ansible.builtin.copy:
+            src: "{{ _aap_runtime_base }}/ansiblemcp/etc/{{ item }}"
+            dest: "{{ _aap_runtime_base }}/ansiblemcp/etc/{{ item }}.backup"
+            remote_src: true
+            mode: preserve
+          loop:
+            - ansiblemcp.cert
+            - ansiblemcp.key
+          ignore_errors: true
+
+        - name: Replace MCP certificate and key
+          ansible.builtin.copy:
+            src: "{{ _cert_temp_dir.path }}/{{ item }}"
+            dest: "{{ _aap_runtime_base }}/ansiblemcp/etc/{{ item }}"
+            remote_src: true
+            owner: "{{ aap_install_user }}"
+            group: "{{ aap_install_user }}"
+            mode: '0400'
+          loop:
+            - ansiblemcp.cert
+            - ansiblemcp.key
+
+        - name: Restart MCP service to load new certificate
+          ansible.builtin.systemd:
+            name: ansiblemcp.service
+            state: restarted
+            scope: user
+
+        - name: Wait for MCP service to be ready
+          ansible.builtin.wait_for:
+            host: "{{ aap_mcp_host }}"
+            port: "{{ aap_mcp_port }}"
+            timeout: 30
+
+        - name: Clean up temp directory
+          ansible.builtin.file:
+            path: "{{ _cert_temp_dir.path }}"
+            state: absent
+
+        - name: Verify MCP service certificate
+          ansible.builtin.shell: |
+            echo | openssl s_client -connect localhost:{{ aap_mcp_port }} -showcerts 2>/dev/null | \
+              openssl x509 -text -noout | grep -E "Subject Alternative Name" -A2
+          register: _live_cert_check
+          changed_when: false
+
+        - name: Display live MCP certificate SANs
+          ansible.builtin.debug:
+            msg:
+              - "MCP service is now using the new certificate with SANs:"
+              - "{{ _live_cert_check.stdout_lines }}"

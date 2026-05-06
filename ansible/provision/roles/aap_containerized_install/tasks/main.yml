@@ -41,6 +41,12 @@
     - aap_run_installer
     - aap_mcp_install | bool
 
+- name: Regenerate MCP certificate with custom SANs
+  ansible.builtin.include_tasks: regenerate_mcp_cert.yml
+  when:
+    - aap_run_installer
+    - aap_mcp_install | bool
+
 - name: Log in to local registry for follow-on EE builds
   ansible.builtin.include_tasks:
     file: login_local_registry.yml

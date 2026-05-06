@@ -105,6 +105,9 @@ aap_mcp_allow_write_operations: "{{ (lookup('ansible.builtin.env', 'AAP_MCP_ALLO
 aap_mcp_ignore_certificate_errors: "{{ (lookup('ansible.builtin.env', 'AAP_MCP_IGNORE_CERTIFICATE_ERRORS') | default('true', true)) | bool }}"
 aap_mcp_tls_cert: "{{ lookup('ansible.builtin.env', 'AAP_MCP_TLS_CERT') | default('', true) }}"
 aap_mcp_tls_key: "{{ lookup('ansible.builtin.env', 'AAP_MCP_TLS_KEY') | default('', true) }}"
+aap_mcp_san_records:
+  - "DNS:{{ aap_private_hostname }}"
+  - "DNS:{{ aap_public_hostname }}"
 
 # Admin token used for MCP validation checks
 aap_admin_token_file: "{{ lookup('ansible.builtin.env', 'AAP_ADMIN_TOKEN_FILE') | default('/tmp/workshop-destination-automation-passwords/aap_admin_token', true) }}"
