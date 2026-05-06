@@ -57,30 +57,98 @@
   loop: "{{ aap_participant_usernames }}"
   no_log: true
 
-- name: "aap_config | Create instructor user"
-  awx.awx.user:
-    controller_host: "{{ aap_controller_host_normalized }}"
-    controller_username: "{{ aap_controller_username }}"
-    controller_password: "{{ aap_controller_password }}"
+- name: "aap_config | Create instructor user via gateway API"
+  ansible.builtin.uri:
+    url: "{{ aap_controller_host_normalized }}/api/gateway/v1/users/"
+    method: POST
+    user: "{{ aap_controller_username }}"
+    password: "{{ aap_controller_password }}"
+    force_basic_auth: true
+    body_format: json
+    body:
+      username: "{{ aap_instructor_username }}"
+      password: "{{ aap_instructor_password }}"
+      email: "{{ aap_instructor_email }}"
+      is_superuser: false
+    status_code:
+      - 201
+      - 400  # May already exist
     validate_certs: "{{ aap_controller_validate_certs }}"
-    username: "{{ aap_instructor_username }}"
-    password: "{{ aap_instructor_password }}"
-    email: "{{ aap_instructor_email }}"
-    is_superuser: false
-    state: present
+  register: _instructor_user_create
+  no_log: true
 
-- name: "aap_config | Create participant users"
-  awx.awx.user:
-    controller_host: "{{ aap_controller_host_normalized }}"
-    controller_username: "{{ aap_controller_username }}"
-    controller_password: "{{ aap_controller_password }}"
+- name: "aap_config | Update instructor password if user already exists"
+  ansible.builtin.uri:
+    url: "{{ aap_controller_host_normalized }}/api/gateway/v1/users/?username={{ aap_instructor_username }}"
+    method: GET
+    user: "{{ aap_controller_username }}"
+    password: "{{ aap_controller_password }}"
+    force_basic_auth: true
     validate_certs: "{{ aap_controller_validate_certs }}"
-    username: "{{ item }}"
-    password: "{{ aap_participant_password_map[item] }}"
-    email: "{{ item }}@example.com"
-    is_superuser: false
-    state: present
+  register: _instructor_user_lookup
+  when: _instructor_user_create.status == 400
+
+- name: "aap_config | Set instructor password via gateway API"
+  ansible.builtin.uri:
+    url: "{{ aap_controller_host_normalized }}/api/gateway/v1/users/{{ _instructor_user_lookup.json.results[0].id }}/"
+    method: PATCH
+    user: "{{ aap_controller_username }}"
+    password: "{{ aap_controller_password }}"
+    force_basic_auth: true
+    body_format: json
+    body:
+      password: "{{ aap_instructor_password }}"
+    validate_certs: "{{ aap_controller_validate_certs }}"
+  when: _instructor_user_create.status == 400
+  no_log: true
+
+- name: "aap_config | Create participant users via gateway API"
+  ansible.builtin.uri:
+    url: "{{ aap_controller_host_normalized }}/api/gateway/v1/users/"
+    method: POST
+    user: "{{ aap_controller_username }}"
+    password: "{{ aap_controller_password }}"
+    force_basic_auth: true
+    body_format: json
+    body:
+      username: "{{ item }}"
+      password: "{{ aap_participant_password_map[item] }}"
+      email: "{{ item }}@example.com"
+      is_superuser: false
+    status_code:
+      - 201
+      - 400  # May already exist
+    validate_certs: "{{ aap_controller_validate_certs }}"
   loop: "{{ aap_participant_usernames }}"
+  register: _participant_users_create
+  no_log: true
+
+- name: "aap_config | Lookup all participant users to ensure passwords are current"
+  ansible.builtin.uri:
+    url: "{{ aap_controller_host_normalized }}/api/gateway/v1/users/?username={{ item }}"
+    method: GET
+    user: "{{ aap_controller_username }}"
+    password: "{{ aap_controller_password }}"
+    force_basic_auth: true
+    validate_certs: "{{ aap_controller_validate_certs }}"
+  loop: "{{ aap_participant_usernames }}"
+  register: _participant_users_lookup
+
+- name: "aap_config | Update all participant passwords via gateway API"
+  ansible.builtin.uri:
+    url: "{{ aap_controller_host_normalized }}/api/gateway/v1/users/{{ item.json.results[0].id }}/"
+    method: PATCH
+    user: "{{ aap_controller_username }}"
+    password: "{{ aap_controller_password }}"
+    force_basic_auth: true
+    body_format: json
+    body:
+      password: "{{ aap_participant_password_map[item.item] }}"
+    validate_certs: "{{ aap_controller_validate_certs }}"
+  loop: "{{ _participant_users_lookup.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  no_log: true
 
 - name: "aap_config | Create EDA service account user"
   awx.awx.user:
@@ -95,3 +163,57 @@
     last_name: "Service Account"
     is_superuser: false
     state: present
+
+- name: "aap_config | Generate platform API token for instructor (write scope)"
+  ansible.builtin.uri:
+    url: "{{ aap_controller_host_normalized }}/api/gateway/v1/tokens/"
+    method: POST
+    user: "{{ aap_instructor_username }}"
+    password: "{{ aap_instructor_password }}"
+    force_basic_auth: true
+    body_format: json
+    body:
+      description: "Platform API token for {{ aap_instructor_username }}"
+      scope: "write"
+      application: null
+    status_code:
+      - 201
+    validate_certs: "{{ aap_controller_validate_certs }}"
+  register: _instructor_token_create
+  no_log: true
+
+- name: "aap_config | Store instructor platform API token"
+  ansible.builtin.copy:
+    dest: "{{ aap_password_store_dir }}/{{ aap_instructor_username }}_platform_token"
+    content: "{{ _instructor_token_create.json.token }}\n"
+    mode: '0600'
+  no_log: true
+
+- name: "aap_config | Generate platform API tokens for participants (read scope)"
+  ansible.builtin.uri:
+    url: "{{ aap_controller_host_normalized }}/api/gateway/v1/tokens/"
+    method: POST
+    user: "{{ item }}"
+    password: "{{ aap_participant_password_map[item] }}"
+    force_basic_auth: true
+    body_format: json
+    body:
+      description: "Platform API token for {{ item }}"
+      scope: "read"
+      application: null
+    status_code:
+      - 201
+    validate_certs: "{{ aap_controller_validate_certs }}"
+  loop: "{{ aap_participant_usernames }}"
+  register: _participant_tokens_create
+  no_log: true
+
+- name: "aap_config | Store participant platform API tokens"
+  ansible.builtin.copy:
+    dest: "{{ aap_password_store_dir }}/{{ item.item }}_platform_token"
+    content: "{{ item.json.token }}\n"
+    mode: '0600'
+  loop: "{{ _participant_tokens_create.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  no_log: true

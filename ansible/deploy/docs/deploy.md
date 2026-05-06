@@ -149,6 +149,10 @@ The `deploy/` function covers application build and release, Dynatrace-related d
   - create placeholder credentials for each Dynatrace credential type
   - copy project content into AAP-local paths for local mode
   - create controller logins, including instructor, participant users, and the EDA service account
+  - generate platform API tokens for all users via Gateway API:
+    - instructor token with `write` scope for full platform access
+    - participant tokens with `read` scope for observability access
+    - tokens stored in the password store directory for MCP server integration
   - create teams, credentials, project, inventory, organizations, and role assignments
   - register job templates for deploy, clean, operate, automate, and remediate playbooks
   - attach appropriate custom credentials to each job template (e.g., OneAgent job template receives both machine and OneAgent PaaS Token credentials)
