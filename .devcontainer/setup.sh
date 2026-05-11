@@ -228,10 +228,10 @@ if [ "$SKIP_DTCTL" = "false" ] || dtctl config current-context &>/dev/null; then
     fi
     
     if [ "$SKIP_SKILLS" != "true" ]; then
-        echo -e "${BLUE}Installing default Copilot skills...${NC}"
+        echo -e "${BLUE}Installing GitHub Copilot skills...${NC}"
         
-        # Install skills using dtctl
-        if dtctl skills install 2>&1; then
+        # Install skills using dtctl with explicit copilot target
+        if dtctl skills install --for copilot 2>&1; then
             echo ""
             echo -e "${GREEN}✓ Skills installed successfully${NC}"
             
@@ -253,12 +253,12 @@ if [ "$SKIP_DTCTL" = "false" ] || dtctl config current-context &>/dev/null; then
             echo -e "questions about Dynatrace, error rates, latency, logs, or observability.${NC}"
         else
             echo -e "${YELLOW}⚠ Failed to install skills${NC}"
-            echo "  You can manually install later with: dtctl skills install"
+            echo "  You can manually install later with: dtctl skills install --for copilot"
         fi
     fi
 else
     echo -e "${YELLOW}⚠ Skipping skill installation (dtctl not configured)${NC}"
-    echo "  Configure dtctl first, then run: dtctl skills install"
+    echo "  Configure dtctl first, then run: dtctl skills install --for copilot"
 fi
 
 ###########################################
