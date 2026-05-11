@@ -39,6 +39,7 @@ Use this devcontainer when you want to:
 | `aap-cert.cert` | AAP self-signed certificate (copied from `ansible/aap-cert.cert`) |
 | `mcp.json.template` | Template for generating `.vscode/mcp.json` with placeholders |
 | `setup.sh` | Interactive configuration script for dtctl and MCP setup |
+| `ai-observability.md` | AI/GenAI observability reference for dtctl skills (auto-installed) |
 | `README.md` | This file |
 
 ## First-Time Setup
@@ -69,6 +70,7 @@ The script will:
 4. Validate the generated JSON configuration
 5. Test the dtctl connection
 6. Install GitHub Copilot skills for Dynatrace operations
+7. Add AI Observability reference for GenAI/LLM tracing
 
 ## Re-running Setup
 
