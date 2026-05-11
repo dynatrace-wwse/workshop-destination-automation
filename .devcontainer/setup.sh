@@ -231,7 +231,7 @@ if [ "$SKIP_DTCTL" = "false" ] || dtctl config current-context &>/dev/null; then
         echo -e "${BLUE}Installing GitHub Copilot skills...${NC}"
         
         # Install skills using dtctl with explicit copilot target
-        if dtctl skills install --for copilot 2>&1; then
+        if dtctl skills install --for copilot --force 2>&1; then
             echo ""
             echo -e "${GREEN}✓ Skills installed successfully${NC}"
             
@@ -256,11 +256,11 @@ if [ "$SKIP_DTCTL" = "false" ] || dtctl config current-context &>/dev/null; then
             echo ""
             echo -e "${BLUE}Adding AI Observability reference...${NC}"
             
-            SKILL_DIR="$HOME/.github/skills/dtctl"
+            SKILL_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.github/skills/dtctl"
             REFERENCES_DIR="$SKILL_DIR/references"
             AI_OBS_SOURCE=".devcontainer/ai-observability.md"
             
-            if [ -f "$AI_OBS_SOURCE" ] && [ -d "$SKILL_DIR" ]; then
+            if [ -f "$AI_OBS_SOURCE" ]; then
                 # Copy AI Observability reference
                 mkdir -p "$REFERENCES_DIR"
                 cp "$AI_OBS_SOURCE" "$REFERENCES_DIR/ai-observability.md"
@@ -268,11 +268,7 @@ if [ "$SKIP_DTCTL" = "false" ] || dtctl config current-context &>/dev/null; then
                 # Add reference to SKILL.md
                 if [ -f "$SKILL_DIR/SKILL.md" ]; then
                     if ! grep -q "ai-observability.md" "$SKILL_DIR/SKILL.md"; then
-                        sed -i.bak '/^## Additional Resources$/{ 
-                            n
-                            i\
-- **AI Observability & GenAI**: [references/ai-observability.md](references/ai-observability.md)
-                        }' "$SKILL_DIR/SKILL.md"
+                        sed -i.bak '/^## Additional Resources$/a\- **AI Observability \& GenAI**: [references\/ai-observability.md](references\/ai-observability.md)' "$SKILL_DIR/SKILL.md"
                         rm -f "$SKILL_DIR/SKILL.md.bak"
                         echo -e "${GREEN}✓ AI Observability reference added to dtctl skill${NC}"
                     else

@@ -96,7 +96,8 @@ After setup, verify your configuration:
 dtctl version
 dtctl config current-context
 dtctl auth whoami --plain
-installed Copilot skills
+
+# Check installed Copilot skills
 dtctl skills list
 
 # Check 
