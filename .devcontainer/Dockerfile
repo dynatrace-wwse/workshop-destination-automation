@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y \
 COPY aap-cert.cert /usr/local/share/ca-certificates/aap-cert.crt
 RUN update-ca-certificates
 
-# Create symlink for NODE_EXTRA_CA_CERTS environment variable
-RUN ln -s /usr/local/share/ca-certificates/aap-cert.crt /etc/ssl/certs/aap-cert.pem
+# Create symlink for NODE_EXTRA_CA_CERTS environment variable (only if it doesn't exist)
+RUN ln -sf /usr/local/share/ca-certificates/aap-cert.crt /etc/ssl/certs/aap-cert.pem
 
 # Install dtctl CLI for Dynatrace operations
 RUN ARCH=$(uname -m | sed 's/x86_64/amd64/; s/aarch64/arm64/') && \
