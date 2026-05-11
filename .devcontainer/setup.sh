@@ -196,6 +196,72 @@ if [ "$SKIP_MCP" = "false" ]; then
 fi
 
 ###########################################
+# Part 3: Install GitHub Copilot Skills
+###########################################
+
+echo ""
+echo "========================================="
+echo " Part 3: GitHub Copilot Skills         "
+echo "========================================="
+echo ""
+
+# Only install skills if dtctl was configured
+if [ "$SKIP_DTCTL" = "false" ] || dtctl config current-context &>/dev/null; then
+    echo "Installing Dynatrace AI skills for GitHub Copilot..."
+    echo ""
+    
+    # Check if skills are already installed
+    INSTALLED_SKILLS=$(dtctl skills list 2>/dev/null | grep -c "." || echo "0")
+    
+    if [ "$INSTALLED_SKILLS" -gt "0" ]; then
+        echo -e "${YELLOW}Skills already installed (count: $INSTALLED_SKILLS)${NC}"
+        read -p "Do you want to reinstall/update skills? (y/N): " reinstall_skills
+        
+        if [[ ! "$reinstall_skills" =~ ^[Yy]$ ]]; then
+            echo -e "${GREEN}Keeping existing skills${NC}"
+            SKIP_SKILLS=true
+        else
+            SKIP_SKILLS=false
+        fi
+    else
+        SKIP_SKILLS=false
+    fi
+    
+    if [ "$SKIP_SKILLS" != "true" ]; then
+        echo -e "${BLUE}Installing default Copilot skills...${NC}"
+        
+        # Install skills using dtctl
+        if dtctl skills install 2>&1; then
+            echo ""
+            echo -e "${GREEN}✓ Skills installed successfully${NC}"
+            
+            # Show installed skills
+            echo ""
+            echo -e "${BLUE}Installed skills:${NC}"
+            dtctl skills list 2>/dev/null | sed 's/^/  /'
+            
+            echo ""
+            echo "These skills enable GitHub Copilot to:"
+            echo "  • Execute DQL queries against Dynatrace"
+            echo "  • Manage dashboards, notebooks, and workflows"
+            echo "  • Query logs, metrics, and traces"
+            echo "  • Create and manage SLOs"
+            echo "  • Investigate problems and analyze incidents"
+            
+            echo ""
+            echo -e "${BLUE}GitHub Copilot will automatically use these skills when you ask"
+            echo -e "questions about Dynatrace, error rates, latency, logs, or observability.${NC}"
+        else
+            echo -e "${YELLOW}⚠ Failed to install skills${NC}"
+            echo "  You can manually install later with: dtctl skills install"
+        fi
+    fi
+else
+    echo -e "${YELLOW}⚠ Skipping skill installation (dtctl not configured)${NC}"
+    echo "  Configure dtctl first, then run: dtctl skills install"
+fi
+
+###########################################
 # Summary
 ###########################################
 
@@ -216,6 +282,15 @@ if [ "$SKIP_MCP" = "false" ]; then
     echo "  File: $MCP_JSON_PATH"
     echo "  Hostname: $AAP_HOSTNAME"
     echo "  Servers: 6 MCP endpoints configured"
+fi
+
+# Check if skills were installed
+if [ "$SKIP_SKILLS" != "true" ] && dtctl config current-context &>/dev/null 2>&1; then
+    SKILL_COUNT=$(dtctl skills list 2>/dev/null | grep -c "." || echo "0")
+    if [ "$SKILL_COUNT" -gt "0" ]; then
+        echo -e "${GREEN}✓${NC} GitHub Copilot skills installed"
+        echo "  Skills: $SKILL_COUNT Dynatrace AI skills"
+    fi
 fi
 
 echo ""
