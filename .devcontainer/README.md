@@ -59,18 +59,23 @@ The script will prompt you for:
 - **AAP MCP Server Hostname** - FQDN with port (e.g., `ec2-3-230-212-158.compute-1.amazonaws.com:8448`)
 - **AAP Bearer Token** - Authentication token for MCP server access
 
+### Part 3: GitHub Copilot Skills
+- **Install Dynatrace AI skills** - Automatically installs skills using `dtctl skills install`
+
 The script will:
 1. Configure dtctl with your Dynatrace credentials
 2. Generate `.vscode/mcp.json` from the template
 3. Back up existing MCP configuration (if any)
 4. Validate the generated JSON configuration
 5. Test the dtctl connection
+6. Install GitHub Copilot skills for Dynatrace operations
 
 ## Re-running Setup
 
 The setup script is **idempotent** - you can run it multiple times to update your configuration. It will:
 - Detect existing dtctl context and ask if you want to reconfigure
 - Detect existing MCP configuration and ask if you want to regenerate
+- Detect existing Copilot skills and ask if you want to reinstall
 - Create backups before overwriting files
 
 ## Usage with GitHub Codespaces
@@ -89,7 +94,10 @@ After setup, verify your configuration:
 dtctl version
 dtctl config current-context
 dtctl auth whoami --plain
+installed Copilot skills
+dtctl skills list
 
+# Check 
 # Check MCP configuration exists
 cat .vscode/mcp.json | jq '.servers | keys'
 
