@@ -159,8 +159,8 @@ fi
 if [ "$SKIP_MCP" = "false" ]; then
     echo "Please provide your Ansible Automation Platform (AAP) MCP server details:"
     echo ""
-    echo "Note: The hostname should include the port if not using standard HTTPS (443)."
-    echo "Example: ec2-3-230-212-158.compute-1.amazonaws.com:8448"
+    echo "Note: The hostname should include the port (8448 by default)."
+    echo "Example: destination-automation.example.com:8448"
     echo ""
     
     prompt_input "AAP MCP Server Hostname (FQDN with port)" AAP_HOSTNAME
