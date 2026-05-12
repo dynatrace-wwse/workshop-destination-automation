@@ -1,0 +1,46 @@
+{
+  "servers": {
+    "aap-job-management": {
+      "type": "http",
+      "url": "https://{{AAP_HOSTNAME}}/job_management/mcp",
+      "headers": {
+        "Authorization": "Bearer {{AAP_TOKEN}}"
+      }
+    },
+    "aap-inventory-management": {
+      "type": "http",
+      "url": "https://{{AAP_HOSTNAME}}/inventory_management/mcp",
+      "headers": {
+        "Authorization": "Bearer {{AAP_TOKEN}}"
+      }
+    },
+    "aap-system-monitoring": {
+      "type": "http",
+      "url": "https://{{AAP_HOSTNAME}}/system_monitoring/mcp",
+      "headers": {
+        "Authorization": "Bearer {{AAP_TOKEN}}"
+      }
+    },
+    "aap-user-management": {
+      "type": "http",
+      "url": "https://{{AAP_HOSTNAME}}/user_management/mcp",
+      "headers": {
+        "Authorization": "Bearer {{AAP_TOKEN}}"
+      }
+    },
+    "aap-security-compliance": {
+      "type": "http",
+      "url": "https://{{AAP_HOSTNAME}}/security_compliance/mcp",
+      "headers": {
+        "Authorization": "Bearer {{AAP_TOKEN}}"
+      }
+    },
+    "aap-platform-configuration": {
+      "type": "http",
+      "url": "https://{{AAP_HOSTNAME}}/platform_configuration/mcp",
+      "headers": {
+        "Authorization": "Bearer {{AAP_TOKEN}}"
+      }
+    }
+  }
+}

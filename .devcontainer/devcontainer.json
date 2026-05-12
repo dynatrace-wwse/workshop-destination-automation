@@ -1,0 +1,29 @@
+{
+  "name": "Workshop Destination Automation - AI Assistant",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "remoteEnv": {
+    "NODE_EXTRA_CA_CERTS": "/etc/ssl/certs/aap-cert.pem"
+  },
+  "postCreateCommand": "echo '\\n===========================================\\nWelcome to Workshop Destination Automation\\n===========================================\\n\\nThis devcontainer is configured for AI-assisted operations using:\\n  - GitHub Copilot for AI assistance\\n  - Ansible MCP Server for automation\\n  - dtctl for Dynatrace operations\\n\\nTo configure your environment, run:\\n  .devcontainer/setup.sh\\n\\nThis will prompt you for:\\n  - Dynatrace environment URL and API token\\n  - Ansible Automation Platform (AAP) MCP server hostname and bearer token\\n\\n===========================================\\n'",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": false,
+      "installOhMyZsh": false,
+      "upgradePackages": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {}
+  }
+}

@@ -1,2 +1,4 @@
 site/
 .mkdocs-cache/
+.vscode/
+.github/skills/*
