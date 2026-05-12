@@ -91,11 +91,22 @@ if [ "$SKIP_DTCTL" = "false" ]; then
     echo "Please provide your Dynatrace environment details:"
     echo ""
     
-    prompt_input "Dynatrace Environment URL (e.g., https://abc12345.live.dynatrace.com)" DT_ENV_URL
+    prompt_input "Dynatrace Environment URL (e.g., https://abc12345.apps.dynatrace.com)" DT_ENV_URL
     prompt_input "Dynatrace API Token" DT_API_TOKEN
     
     # Remove trailing slash from URL if present
     DT_ENV_URL=${DT_ENV_URL%/}
+    
+    # Normalize URL to use .apps.dynatrace.com format
+    if [[ "$DT_ENV_URL" == *".apps.live.dynatrace.com"* ]]; then
+        # Remove .live. if URL contains both .apps.live.
+        DT_ENV_URL=${DT_ENV_URL//.apps.live.dynatrace.com/.apps.dynatrace.com}
+        echo -e "${BLUE}Normalized URL to: $DT_ENV_URL${NC}"
+    elif [[ "$DT_ENV_URL" == *".live.dynatrace.com"* ]]; then
+        # Replace .live. with .apps. if URL only contains .live.
+        DT_ENV_URL=${DT_ENV_URL//.live.dynatrace.com/.apps.dynatrace.com}
+        echo -e "${BLUE}Normalized URL to: $DT_ENV_URL${NC}"
+    fi
     
     echo ""
     echo -e "${BLUE}Configuring dtctl...${NC}"
