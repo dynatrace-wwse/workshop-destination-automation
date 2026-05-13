@@ -15,6 +15,7 @@ nav:
   - Deploy: lab-guide/deploy.md
   - Observe and Automate: lab-guide/observe-and-automate.md
   - Remediate: lab-guide/remediate.md
+  - Delegate: lab-guide/delegate.md
   - Summarize: lab-guide/summarize.md
   - Clean: lab-guide/clean.md
 
