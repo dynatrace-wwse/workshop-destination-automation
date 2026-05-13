@@ -282,4 +282,4 @@ Dynatrace's out-of-the-box integrations with ServiceNow, JIRA, Slack, PagerDuty,
 - [ ] EDA Rule Audit confirmed the event was received, matched rulebook conditions, and triggered the remediation job template
 - [ ] Service recovered automatically—RAG response quality returned to expected baseline without manual intervention
 
-Continue to [Summarize](summarize.md).
+Continue to [Delegate](delegate.md).
