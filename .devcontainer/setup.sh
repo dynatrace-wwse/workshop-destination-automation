@@ -63,6 +63,52 @@ test_dtctl_connection() {
     fi
 }
 
+# Function to fetch and install AAP MCP certificate chain for system and Node.js trust
+fetch_aap_mcp_certificate() {
+    local aap_hostport="$1"
+    local cert_store_path="/usr/local/share/ca-certificates/aap-mcp.crt"
+    local node_extra_ca_path="/etc/ssl/certs/aap-cert.pem"
+    local host_only="${aap_hostport%%:*}"
+    local temp_cert_file
+
+    temp_cert_file=$(mktemp)
+
+    echo -e "${BLUE}Retrieving TLS certificate chain from ${aap_hostport}...${NC}"
+
+    if ! echo | openssl s_client -connect "${aap_hostport}" -servername "${host_only}" -showcerts 2>/dev/null | \
+        awk '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/ { print }' > "${temp_cert_file}"; then
+        rm -f "${temp_cert_file}"
+        echo -e "${RED}✗ Failed to retrieve certificates from ${aap_hostport}${NC}"
+        return 1
+    fi
+
+    if ! grep -q "BEGIN CERTIFICATE" "${temp_cert_file}"; then
+        rm -f "${temp_cert_file}"
+        echo -e "${RED}✗ No certificates were returned by ${aap_hostport}${NC}"
+        return 1
+    fi
+
+    echo -e "${BLUE}Installing retrieved certificate chain into container trust store...${NC}"
+
+    if command -v sudo >/dev/null 2>&1; then
+        sudo install -m 0644 "${temp_cert_file}" "${cert_store_path}"
+        sudo update-ca-certificates >/dev/null
+        sudo ln -sf "${cert_store_path}" "${node_extra_ca_path}"
+    else
+        install -m 0644 "${temp_cert_file}" "${cert_store_path}"
+        update-ca-certificates >/dev/null
+        ln -sf "${cert_store_path}" "${node_extra_ca_path}"
+    fi
+
+    rm -f "${temp_cert_file}"
+
+    echo -e "${GREEN}✓ AAP MCP certificate chain installed${NC}"
+    echo "  System trust: ${cert_store_path}"
+    echo "  Node extra CA: ${node_extra_ca_path}"
+
+    return 0
+}
+
 ###########################################
 # Part 1: Dynatrace dtctl Configuration
 ###########################################
@@ -165,6 +211,13 @@ if [ "$SKIP_MCP" = "false" ]; then
     
     prompt_input "AAP MCP Server Hostname (FQDN with port)" AAP_HOSTNAME
     prompt_input "AAP Bearer Token" AAP_TOKEN
+
+    # Retrieve and trust the active AAP MCP certificate chain
+    if ! fetch_aap_mcp_certificate "$AAP_HOSTNAME"; then
+        echo -e "${RED}Error: Unable to retrieve and install AAP MCP certificate chain${NC}"
+        echo "Please verify hostname/port reachability and rerun .devcontainer/setup.sh"
+        exit 1
+    fi
     
     # Create .vscode directory if it doesn't exist
     mkdir -p .vscode
@@ -333,6 +386,9 @@ echo ""
 echo "You can now use GitHub Copilot to:"
 echo "  - Query Dynatrace using dtctl skill"
 echo "  - Interact with Ansible Automation Platform via MCP"
+echo ""
+echo "If this is your first certificate update, reload VS Code to ensure all"
+echo "processes pick up the refreshed trust store."
 echo ""
 echo "To reconfigure at any time, run:"
 echo "  .devcontainer/setup.sh"

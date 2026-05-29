@@ -23,8 +23,8 @@ Use this devcontainer when you want to:
 - **Git** - Version control
 
 ### Certificate Trust
-- AAP self-signed certificate (`aap-cert.cert`) is trusted at the system level
-- `NODE_EXTRA_CA_CERTS` environment variable configured for Node.js/VS Code compatibility
+- AAP MCP TLS certificate chain is retrieved during setup and trusted at the system level
+- `NODE_EXTRA_CA_CERTS` points to the system CA bundle for Node.js/VS Code compatibility
 
 ### VS Code Extensions
 - **GitHub Copilot** - AI pair programmer
@@ -36,7 +36,6 @@ Use this devcontainer when you want to:
 |------|-------------|
 | `devcontainer.json` | Main devcontainer configuration with features and extensions |
 | `Dockerfile` | Custom image with dtctl installation and certificate trust setup |
-| `aap-cert.cert` | AAP self-signed certificate (copied from `ansible/aap-cert.cert`) |
 | `mcp.json.template` | Template for generating `.vscode/mcp.json` with placeholders |
 | `setup.sh` | Interactive configuration script for dtctl and MCP setup |
 | `ai-observability.md` | AI/GenAI observability reference for dtctl skills (auto-installed) |
@@ -65,12 +64,13 @@ The script will prompt you for:
 
 The script will:
 1. Configure dtctl with your Dynatrace credentials
-2. Generate `.vscode/mcp.json` from the template
-3. Back up existing MCP configuration (if any)
-4. Validate the generated JSON configuration
-5. Test the dtctl connection
-6. Install GitHub Copilot skills for Dynatrace operations
-7. Add AI Observability reference for GenAI/LLM tracing
+2. Retrieve the active AAP MCP TLS certificate chain and trust it locally
+3. Generate `.vscode/mcp.json` from the template
+4. Back up existing MCP configuration (if any)
+5. Validate the generated JSON configuration
+6. Test the dtctl connection
+7. Install GitHub Copilot skills for Dynatrace operations
+8. Add AI Observability reference for GenAI/LLM tracing
 
 ## Re-running Setup
 
@@ -106,7 +106,7 @@ cat .vscode/mcp.json | jq '.servers | keys'
 
 # Verify certificate trust
 echo $NODE_EXTRA_CA_CERTS
-cat /etc/ssl/certs/aap-cert.pem
+ls -la /usr/local/share/ca-certificates/aap-mcp.crt
 ```
 
 ## Security Notes
@@ -123,7 +123,7 @@ If you encounter certificate validation errors when connecting to the AAP MCP se
 
 1. Verify the certificate is in place:
    ```bash
-   ls -la /etc/ssl/certs/aap-cert.pem
+   ls -la /usr/local/share/ca-certificates/aap-mcp.crt
    ```
 
 2. Check the NODE_EXTRA_CA_CERTS environment variable:

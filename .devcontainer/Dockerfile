@@ -4,15 +4,13 @@ FROM mcr.microsoft.com/devcontainers/base:debian
 RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
+    openssl \
     jq \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and trust the AAP certificate
-COPY aap-cert.cert /usr/local/share/ca-certificates/aap-cert.crt
-RUN update-ca-certificates
-
-# Create symlink for NODE_EXTRA_CA_CERTS environment variable (only if it doesn't exist)
-RUN ln -sf /usr/local/share/ca-certificates/aap-cert.crt /etc/ssl/certs/aap-cert.pem
+# Create a stable Node extra CA path; setup.sh will populate this with the
+# current AAP MCP CA certificate chain at runtime.
+RUN touch /etc/ssl/certs/aap-cert.pem
 
 # Install dtctl CLI for Dynatrace operations
 RUN ARCH=$(uname -m | sed 's/x86_64/amd64/; s/aarch64/arm64/') && \
