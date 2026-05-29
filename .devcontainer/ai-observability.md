@@ -89,6 +89,54 @@ Set `gen_ai.system` to `azure.ai.inference`
 | `gen_ai.client.token.usage` | Token usage by input/output type |
 | `gen_ai.client.operation.duration` | Duration of GenAI operations |
 
+### Ollama
+
+| Attribute | Description | How to Interpret |
+|-----------|-------------|------------------|
+| `ollama.total_duration` | Total Ollama-side processing time for the request (ns). | Compare with span `duration`. If they are close, most latency is inside Ollama rather than app logic or network wrappers. |
+| `ollama.eval_duration` | Time spent generating output tokens (decode/inference phase, ns). | Usually the largest component. High share means latency is inference-bound during token generation. |
+| `ollama.prompt_eval_duration` | Time spent evaluating prompt/context tokens before generation (ns). | High values indicate prompt/context processing overhead; often tied to large prompts or long retrieved context. |
+| `ollama.load_duration` | Time spent loading model state into memory for the request (ns). | If elevated, investigate cold starts, model eviction, or memory pressure. Persistently low values suggest warm model cache. |
+| `ollama.eval_count` | Number of generated output tokens. | Use with `ollama.eval_duration` to estimate decode throughput: `eval_count / (eval_duration / 1e9)` tokens/sec. |
+
+#### Ollama Timing Analysis Workflow
+
+1. Convert durations from ns to seconds or ms for readability.
+2. Calculate phase shares using `ollama.total_duration`:
+    - eval share = `ollama.eval_duration / ollama.total_duration`
+    - prompt share = `ollama.prompt_eval_duration / ollama.total_duration`
+    - load share = `ollama.load_duration / ollama.total_duration`
+3. Compute residual overhead:
+    - `other = total - (eval + prompt_eval + load)`
+4. Estimate generation throughput:
+    - `tokens_per_second = ollama.eval_count / (ollama.eval_duration / 1e9)`
+5. Summarize likely bottleneck:
+    - High eval share: generation/inference bottleneck
+    - High prompt_eval share: prompt or retrieved-context size bottleneck
+    - High load share: model load/cold-start bottleneck
+
+#### DQL Pattern: Slow Trace with Ollama Breakdown
+
+```dql
+fetch spans, from:now()-24h
+| filter trace.id == toUid("<trace-id>")
+| filter span.name == "ollama.client.request"
+| fields
+     timestamp,
+     trace.id,
+     span.id,
+     span.name,
+     duration,
+     ollama.total_duration,
+     ollama.eval_duration,
+     ollama.prompt_eval_duration,
+     ollama.load_duration,
+     ollama.eval_count,
+     gen_ai.request.model,
+     gen_ai.system
+| sort duration desc
+```
+
 ## DQL Query Patterns for AI Observability
 
 ### Find spans by GenAI model
