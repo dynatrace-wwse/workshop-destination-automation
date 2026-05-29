@@ -72,6 +72,26 @@ The script will:
 7. Install GitHub Copilot skills for Dynatrace operations
 8. Add AI Observability reference for GenAI/LLM tracing
 
+## Reloading VS Code After Setup
+
+After running `setup.sh` for the first time, you **must reload VS Code** before the Ansible MCP servers will connect successfully.
+
+### Why This Is Required
+
+The devcontainer sets `NODE_EXTRA_CA_CERTS` to the system CA bundle at container startup. However, VS Code's Node.js processes (including the MCP client) read this environment variable **once at startup** — they do not detect changes dynamically. Since `setup.sh` downloads and installs the AAP MCP certificate chain *after* the container has started, the running VS Code processes are unaware of the new certificate and will fail with:
+
+```
+TypeError: fetch failed
+```
+
+### How to Reload
+
+1. Open the Command Palette: `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
+2. Type `Developer: Reload Window`
+3. Press **Enter**
+
+This restarts VS Code in place without stopping the container, and all Node.js processes will re-read the updated CA bundle on startup.
+
 ## Re-running Setup
 
 The setup script is **idempotent** - you can run it multiple times to update your configuration. It will:

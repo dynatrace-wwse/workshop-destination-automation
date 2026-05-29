@@ -387,9 +387,12 @@ echo "You can now use GitHub Copilot to:"
 echo "  - Query Dynatrace using dtctl skill"
 echo "  - Interact with Ansible Automation Platform via MCP"
 echo ""
-echo "If this is your first certificate update, reload VS Code to ensure all"
-echo "processes pick up the refreshed trust store."
-echo ""
+
+if [ "$SKIP_MCP" = "false" ]; then
+    echo -e "${YELLOW}To connect to the Ansible MCP Server, use 'Developer: Reload Window' from the Command Palette.${NC}"
+    echo ""
+fi
+
 echo "To reconfigure at any time, run:"
 echo "  .devcontainer/setup.sh"
 echo ""
