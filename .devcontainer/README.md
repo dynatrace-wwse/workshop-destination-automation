@@ -57,7 +57,7 @@ The script will prompt you for:
 - **Dynatrace API Token** - API token with appropriate permissions for dtctl operations
 
 ### Part 2: Ansible MCP Configuration
-- **AAP MCP Server Hostname** - FQDN with port (e.g., `ec2-3-230-212-158.compute-1.amazonaws.com:8448`)
+- **AAP MCP Server Hostname** - FQDN with port (e.g., `destination-automation.example.com:8448`)
 - **AAP Bearer Token** - Authentication token for MCP server access
 
 ### Part 3: GitHub Copilot Skills
