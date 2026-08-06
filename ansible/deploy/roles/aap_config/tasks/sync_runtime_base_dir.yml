@@ -1,0 +1,65 @@
+---
+# =============================================================
+# Sync runtime workshop content to service account home directory
+#
+# Run standalone via:
+#   ansible-playbook deploy/playbooks/sync_runtime_base_dir.yml
+# =============================================================
+
+- name: "aap_config | Validate local deploy mode for runtime sync"
+  ansible.builtin.assert:
+    that:
+      - aap_deploy_mode == 'local'
+    fail_msg: "sync_runtime_base_dir.yml supports only local mode. Set -e aap_deploy_mode=local."
+
+- name: "aap_config | Ensure service account runtime base directory exists"
+  ansible.builtin.file:
+    path: "{{ aap_runtime_destination_automation_base_dir }}"
+    state: directory
+    owner: "{{ aap_machine_credential_username }}"
+    group: "{{ aap_machine_credential_username }}"
+    mode: "0755"
+  become: true
+
+- name: "aap_config | Sync app content to service account runtime directory"
+  ansible.builtin.command:
+    cmd: >-
+      rsync -a --delete
+      {{ aap_local_app_source_dir }}/
+      {{ aap_runtime_destination_automation_base_dir }}/app/
+  become: true
+
+- name: "aap_config | Ensure service account owns runtime app directory"
+  ansible.builtin.file:
+    path: "{{ aap_runtime_destination_automation_base_dir }}/app"
+    state: directory
+    owner: "{{ aap_machine_credential_username }}"
+    group: "{{ aap_machine_credential_username }}"
+    recurse: true
+  become: true
+
+- name: "aap_config | Ensure runtime dynatrace config directory exists"
+  ansible.builtin.file:
+    path: "{{ aap_runtime_destination_automation_base_dir }}/dynatrace/config"
+    state: directory
+    owner: "{{ aap_machine_credential_username }}"
+    group: "{{ aap_machine_credential_username }}"
+    mode: "0755"
+  become: true
+
+- name: "aap_config | Sync dynatrace config to service account runtime directory"
+  ansible.builtin.command:
+    cmd: >-
+      rsync -a --delete
+      {{ aap_local_dynatrace_config_source_dir }}/
+      {{ aap_runtime_destination_automation_base_dir }}/dynatrace/config/
+  become: true
+
+- name: "aap_config | Ensure service account owns runtime dynatrace directory"
+  ansible.builtin.file:
+    path: "{{ aap_runtime_destination_automation_base_dir }}/dynatrace"
+    state: directory
+    owner: "{{ aap_machine_credential_username }}"
+    group: "{{ aap_machine_credential_username }}"
+    recurse: true
+  become: true

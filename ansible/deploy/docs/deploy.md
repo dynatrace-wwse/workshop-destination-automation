@@ -93,6 +93,13 @@ The `deploy/` function covers application build and release, Dynatrace-related d
 - Execution mode: plain Ansible.
 - Reason: administrative helper for controller configuration; no matching job template exists.
 
+#### `deploy/playbooks/sync_runtime_base_dir.yml`
+
+- Purpose: sync workshop runtime content from the repository working tree to the service-account runtime directory.
+- Role: `aap_config` using `tasks_from: sync_runtime_base_dir.yml`
+- Execution mode: plain Ansible.
+- Reason: operational helper to refresh runtime content (for example, app updates) without running the full AAP bootstrap flow.
+
 ## Roles
 
 ### `deploy/roles/podman_build`
@@ -141,7 +148,7 @@ The `deploy/` function covers application build and release, Dynatrace-related d
 
 ### `deploy/roles/aap_config`
 
-- Used by `configure_aap.yml` and `configure_eda.yml`.
+- Used by `configure_aap.yml`, `configure_eda.yml`, and `sync_runtime_base_dir.yml`.
 - This is the controller bootstrap role for the workshop.
 - Major responsibilities:
   - validate controller and deployment settings
@@ -157,6 +164,7 @@ The `deploy/` function covers application build and release, Dynatrace-related d
   - register job templates for deploy, clean, operate, automate, and remediate playbooks
   - attach appropriate custom credentials to each job template (e.g., OneAgent job template receives both machine and OneAgent PaaS Token credentials)
   - configure EDA project, DE, controller credential, and rulebook activation
+  - provide a sync-only task path (`tasks_from: sync_runtime_base_dir.yml`) to refresh `/app` and `/dynatrace/config` into `/home/aap-service-account/destination-automation`
 
 ## AAP vs Plain Ansible Summary
 
@@ -177,3 +185,4 @@ Prefer plain `ansible-playbook`:
 - `configure_aap.yml`
 - `configure_eda.yml`
 - `update_ee.yml`
+- `sync_runtime_base_dir.yml`

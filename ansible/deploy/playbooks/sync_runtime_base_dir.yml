@@ -1,0 +1,22 @@
+---
+# =============================================================
+# Sync workshop runtime content to service account base directory
+#
+# Usage:
+#   ansible-playbook deploy/playbooks/sync_runtime_base_dir.yml
+#
+# Optional variables:
+#   -e aap_deploy_mode=local
+#   -e aap_local_app_source_dir=/home/ec2-user/workshop-destination-automation/app
+#   -e aap_runtime_destination_automation_base_dir=/home/aap-service-account/destination-automation
+# =============================================================
+
+- name: "Workshop | Sync runtime base directory for service account"
+  hosts: localhost
+  gather_facts: true
+
+  tasks:
+    - name: "Sync runtime app and dynatrace content"
+      ansible.builtin.include_role:
+        name: aap_config
+        tasks_from: sync_runtime_base_dir.yml
