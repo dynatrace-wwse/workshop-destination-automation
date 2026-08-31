@@ -1,10 +1,10 @@
 # Summarize
 
-This workshop walked through an end-to-end AI operations lifecycle using Dynatrace and Red Hat AAP.
+This workshop walked through an end-to-end AI operations lifecycle using Dynatrace and Red Hat Ansible Automation Platform.
 
 ## What You Accomplished
 
-- Provisioned Red Hat AAP containerized on RHEL 9.
+- Provisioned Red Hat Ansible Automation Platform containerized on RHEL 9.
 - Deployed Dynatrace components, including app/configuration integrations, EdgeConnect, and OneAgent.
 - Deployed the easyTravel AI Travel Advisor stack using Ansible-orchestrated Podman automation.
 - Observed AI workload behavior and compared outcomes after controlled runtime changes.
@@ -28,19 +28,19 @@ The Delegate phase demonstrated a fundamental shift in how platform teams intera
 
 **From Manual to Conversational**
 
-Instead of navigating UIs, writing DQL queries by hand, or locating job templates across AAP projects, engineers express intent in natural language. AI agents handle the mechanical translation between systems.
+Instead of navigating UIs, writing DQL queries by hand, or locating job templates across Ansible projects, engineers express intent in natural language. AI agents handle the mechanical translation between systems.
 
 **From Sequential to Composed**
 
-A single delegated request—"analyze models, pick the fastest, deploy it"—triggers queries to Dynatrace, reasoning over results, job launches in AAP, and verification checks. What once required context-switching across multiple tools now flows through one conversational interface.
+A single delegated request—"analyze models, pick the fastest, deploy it"—triggers queries to Dynatrace, reasoning over results, job launches in Ansible Automation Platform, and verification checks. What once required context-switching across multiple tools now flows through one conversational interface.
 
 **From Specialized to Accessible**
 
-Deep expertise in DQL syntax, AAP API patterns, or EDA rulebook structures is no longer a prerequisite. Domain experts can investigate and act using the same natural language they use to describe problems to teammates.
+Deep expertise in DQL syntax, Ansible API patterns, or EDA rulebook structures is no longer a prerequisite. Domain experts can investigate and act using the same natural language they use to describe problems to teammates.
 
 **Transparency and Control**
 
-Every tool call remains visible and requires approval before execution. Delegated automation is auditable through the same AAP job logs, Dynatrace traces, and chat transcripts teams already use for troubleshooting and compliance.
+Every tool call remains visible and requires approval before execution. Delegated automation is auditable through the same Ansible job logs, Dynatrace traces, and chat transcripts teams already use for troubleshooting and compliance.
 
 ## Recommended Next Steps
 

@@ -12,7 +12,7 @@ Use this section to return the workshop environment to a known baseline after co
 
 ### 1. Run Workshop Cleanup Automation
 
-- Use the provided clean playbooks or AAP job templates in the clean function.
+- Use the provided clean playbooks or Ansible job templates in the clean function.
 - Remove deployed application containers, networks, and temporary files.
 
 ### 2. Optional Dynatrace Cleanup
@@ -20,7 +20,7 @@ Use this section to return the workshop environment to a known baseline after co
 - Remove workshop-only monitoring objects, app installs, and test entities.
 - Retain shared tenant configuration only if needed by your organization.
 
-### 3. Optional AAP Cleanup
+### 3. Optional Ansible Automation Platform Cleanup
 
 - Disable or remove temporary credentials and service accounts used for the workshop.
 - Archive or delete workshop-specific projects and job templates if this was a disposable environment.

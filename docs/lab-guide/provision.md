@@ -33,12 +33,12 @@ cd ~
 git clone https://github.com/dynatrace-wwse/workshop-destination-automation.git
 ```
 
-## Step 2: Download the AAP Install Tarball
+## Step 2: Download the Ansible Automation Platform Install Tarball
 
 Locate the `Ansible Automation Platform 2.6 Containerized Setup Bundle` for RHEL 9 at
 [https://access.redhat.com/downloads](https://access.redhat.com/downloads), then download it to the host.
 
-![Red Hat AAP Installer Download](../assets/images/red-hat-aap-installer-download.png)
+![Red Hat Ansible Automation Platform Installer Download](../assets/images/red-hat-aap-installer-download.png)
 
 ```bash
 mkdir ~/redhat
@@ -46,7 +46,7 @@ cd ~/redhat
 wget -O ansible-automation-platform-setup-bundle.tar.gz "<your-url-here>"
 ```
 
-## Step 3: Install AAP Containerized
+## Step 3: Install Ansible Automation Platform Containerized
 
 Move into the workshop ansible directory
 
@@ -54,7 +54,7 @@ Move into the workshop ansible directory
 cd ~/workshop-destination-automation/ansible
 ```
 
-Create AAP target installation directory
+Create Ansible Automation Platform target installation directory
 
 ```
 export CURRENT_USER=$(whoami)
@@ -69,7 +69,7 @@ mkdir -p ~/.ansible/collections
 ansible-galaxy collection install -r requirements.yml
 ```
 
-Set your required variables and run the install playbook.  You may review additional installation variables in the documentation here: [AAP Containerized Quickstart](https://github.com/dynatrace-wwse/workshop-destination-automation/blob/main/ansible/provision/docs/aap_containerized_quickstart.md){target="_blank"}
+Set your required variables and run the install playbook.  You may review additional installation variables in the documentation here: [Ansible Automation Platform Containerized Quickstart](https://github.com/dynatrace-wwse/workshop-destination-automation/blob/main/ansible/provision/docs/aap_containerized_quickstart.md){target="_blank"}
 
 ```bash
 export AAP_PUBLIC_HOSTNAME="<your-public-fqdn>"
@@ -81,9 +81,9 @@ ansible-playbook provision/playbooks/install_aap_containerized.yml
 ```
 
 !!! tip "Time Management Opportunity"
-    Provisioning Red Hat Ansible Automation Platform will take some time.  It is recommended to create the [Dynatrace Tokens and Credentials](prerequisites.md#dynatrace-tokens-and-credentials) while AAP is installing.
+    Provisioning Red Hat Ansible Automation Platform will take some time.  It is recommended to create the [Dynatrace Tokens and Credentials](prerequisites.md#dynatrace-tokens-and-credentials) while Ansible Automation Platform is installing.
 
-After installation completes, you can validate AAP status with the included healthcheck script.
+After installation completes, you can validate Ansible Automation Platform status with the included healthcheck script.
 
 ```bash
 cd ~/workshop-destination-automation/ansible && ./aap_status.sh
@@ -91,7 +91,7 @@ cd ~/workshop-destination-automation/ansible && ./aap_status.sh
 
 ## Step 4: Apply Subscription and Validate Access
 
-- Open the AAP web console
+- Open the Ansible web console
     - https://{AAP-PUBLIC-HOSTNAME}:443/
     - You can expect a TLS certificate warning
 - Apply your subscription/license
@@ -99,7 +99,7 @@ cd ~/workshop-destination-automation/ansible && ./aap_status.sh
 
 ## Step 5: Build or Import Workshop Images
 
-This workshop requires specific Ansible collections to be included in the Execution Environments and Decision Environments.  Use one of the following patterns to make the images available in your AAP/EDA instance.
+This workshop requires specific Ansible collections to be included in the Execution Environments and Decision Environments.  Use one of the following patterns to make the images available in your Ansible Automation Platform instance.
 
 ### Option A: Build locally
 
@@ -123,7 +123,7 @@ Default image sources are provided in the roles and can be overridden with envir
 
 ## Validation
 
-- [ ] AAP services are healthy on the host.
+- [ ] Ansible Automation Platform services are healthy on the host.
 - [ ] Controller login is successful.
 - [ ] Required EE and DE images exist in Automation Hub and can be referenced later.
 

@@ -211,19 +211,19 @@ Use this step to operationalize AI model tuning through enterprise automation, s
 - Why governance, repeatability, and auditability matter for AI in production
 
 !!! tip "Red Hat Ansible Automation Platform: Overview"
-    Red Hat Ansible Automation Platform (AAP) provides enterprise-grade automation and orchestration for infrastructure, applications, and now AI workloads. It enables teams to define infrastructure and application configurations as code, version-control them, and execute them reliably across hybrid cloud and on-premises environments. When combined with Red Hat OpenShift for containerized AI services, AAP provides seamless orchestration of both compute and configuration. Red Hat's AI portfolio—including integration with IBM's watsonx and partnerships across LLM providers—extends AAP's capabilities into generative AI workflows, model serving, and governance. Value is realized through reduced manual toil, consistent deployments, lower error rates, compliance auditing, and the ability to scale operations globally without increasing headcount.
+    Red Hat Ansible Automation Platform provides enterprise-grade automation and orchestration for infrastructure, applications, and now AI workloads. It enables teams to define infrastructure and application configurations as code, version-control them, and execute them reliably across hybrid cloud and on-premises environments. When combined with Red Hat OpenShift for containerized AI services, Ansible Automation Platform provides seamless orchestration of both compute and configuration. Red Hat's AI portfolio—including integration with IBM's watsonx and partnerships across LLM providers—extends Ansible Automation Platform's capabilities into generative AI workflows, model serving, and governance. Value is realized through reduced manual toil, consistent deployments, lower error rates, compliance auditing, and the ability to scale operations globally without increasing headcount.
 
-Access the AAP Web Interface
+Access the Ansible Web Interface
 
 **For Instructors:**
 
-1. Open the Red Hat AAP web interface in your browser
+1. Open the Red Hat Ansible web interface in your browser
 2. Log in using your **instructor credentials**
 3. You have full permissions to execute and modify job templates
 
 **For Participants:**
 
-1. Open the Red Hat AAP web interface in your browser
+1. Open the Red Hat Ansible web interface in your browser
 2. Log in using your **participant credentials** (provided by your instructor)
 3. You have read-only access and can view job status and outputs, but cannot directly launch templates. Your instructor will launch templates on your behalf.
 
@@ -234,7 +234,7 @@ Locate and Review the `AI Runtime` Workflow Template
 ??? tip "Domains"
     Find your templates faster by filtering on Domains.  Try using the `App` Domain.  Then use the `Search` function to further narrow your results.
 
-1. In the AAP web UI, navigate to **Automation Execution** → **Templates**
+1. In the Ansible web UI, navigate to **Automation Execution** → **Templates**
 2. Find and select the `destination-automation-workflow-app-ai-runtime` template
 3. Review the template configuration:
     - **Workflow design** — A directed graph of job template steps
@@ -301,7 +301,7 @@ Compare these new results against your Step 1 baseline notes:
 - Is answer consistency better or worse?
 - Did the temperature/model change impact relevance for your use case?
 
-### The Value of AAP for AI Operations
+### The Value of Red Hat Ansible for AI Operations
 
 Red Hat Ansible Automation Platform brings enterprise discipline to AI workload management:
 
@@ -310,9 +310,9 @@ Red Hat Ansible Automation Platform brings enterprise discipline to AI workload 
 - **Security** — Credentials and secrets are vaulted; sensitive parameters are never logged in plain text
 - **Governance** — Workflows can enforce approval gates, compliance checks, and rollback procedures
 - **Scale** — Deploy to one AI service or thousand services with identical repeatability and governance
-- **Integration** — AAP workflows orchestrate infrastructure, applications, and now AI runtime configurations, creating unified operations across the entire stack (OpenShift AI, RHEL AI, IBM WatsonX, vLLM, and more)
+- **Integration** — Ansible workflows orchestrate infrastructure, applications, and now AI runtime configurations, creating unified operations across the entire stack (OpenShift AI, RHEL AI, IBM WatsonX, vLLM, and more)
 
-Without automation, scaling AI operations requires proportional growth in operational staff. With AAP, your team manages exponentially more AI services through codified, versioned, audited workflows.
+Without automation, scaling AI operations requires proportional growth in operational staff. With Red Hat Ansible, your team manages exponentially more AI services through codified, versioned, audited workflows.
 
 ## Step 4: Compare AI Results with Dynatrace
 
@@ -415,7 +415,7 @@ Dynatrace makes it possible to compare AI runtime inputs, outputs, performance, 
 
 - [ ] Baseline prompts were run in both **Direct LLM** and **RAG** modes with thumbs up/down feedback captured
 - [ ] Baseline notes include quality and behavior signals (relevance, specificity, consistency, latency, and feedback ratio)
-- [ ] An **AI Runtime** workflow execution in AAP changed `model`, `temperature`, and/or `rag_instructions`, and the job history was reviewed
+- [ ] An **AI Runtime** workflow execution in Ansible Automation Platform changed `model`, `temperature`, and/or `rag_instructions`, and the job history was reviewed
 - [ ] The same prompts were re-run after the runtime change, and post-change observations were documented
 - [ ] Dynatrace Explorer traces and the **AI Model Versioning and A/B Testing** dashboard were used to compare performance, quality, and cost across runtime variants
 

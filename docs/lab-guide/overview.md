@@ -1,17 +1,17 @@
 # Overview
 
+This lab demonstrates how Dynatrace and Red Hat Ansible Automation Platform work together to deploy, observe, automate, and remediate a containerized AI application.
+
 !!! warning "Not yet migrated to the Dynatrace Enablement App"
     This training has not been migrated to a fully immersive, interactive and self-service training.
     Questions or feedback? Reach out to the Center of Excellence Enablement Team via
     [GitHub Issues](https://github.com/dynatrace-wwse/codespaces-framework/issues)
     or the [feedback form](https://forms.office.com/r/QaCx6VAJe8).
 
-This lab demonstrates how Dynatrace and Red Hat Ansible Automation Platform (AAP) work together to deploy, observe, automate, and remediate a containerized AI application.
-
 ## What You Will Build
 
 - A containerized easyTravel AI Travel Advisor stack on Podman.
-- Automated deployment and configuration workflows with AAP Controller and Event-Driven Ansible (EDA).
+- Automated deployment and configuration workflows with Ansible Controller and Event-Driven Ansible (EDA).
 - Dynatrace AI observability and automation integrations for runtime analysis and operational response.
 
 ## Workshop Architecture
@@ -20,7 +20,7 @@ This lab demonstrates how Dynatrace and Red Hat Ansible Automation Platform (AAP
 Instructor / Operator
         |
         v
-AAP Controller + EDA  ----->  Dynatrace Tenant (Apps, Settings, OneAgent, EdgeConnect)
+Ansible Controller + EDA  ----->  Dynatrace Tenant (Apps, Settings, OneAgent, EdgeConnect)
         |
         v
 RHEL 9 host with Podman  ----->  easyTravel AI Travel Advisor + supporting services
@@ -40,10 +40,10 @@ RHEL 9 host with Podman  ----->  easyTravel AI Travel Advisor + supporting servi
 - Trigger automated corrections when platform health degrades.
 - Compare behavior before and after model, prompt, or retrieval configuration changes.
 
-## Why Dynatrace + Red Hat AAP Together
+## Why Dynatrace + Red Hat Ansible Together
 
 - Dynatrace provides deep runtime context and high-fidelity problem detection.
-- AAP turns intent into consistent, repeatable automation across deployment and operations.
+- Ansible turns intent into consistent, repeatable automation across deployment and operations.
 - EDA connects detections to actions, reducing mean time to remediation.
 - The combined platform supports reliable AI operations with less manual intervention.
 
