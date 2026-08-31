@@ -2,6 +2,12 @@
 
 This lab demonstrates how Dynatrace and Red Hat Ansible Automation Platform work together to deploy, observe, automate, and remediate a containerized AI application.
 
+!!! warning "Not yet migrated to the Dynatrace Enablement App"
+    This training has not been migrated to a fully immersive, interactive and self-service training.
+    Questions or feedback? Reach out to the Center of Excellence Enablement Team via
+    [GitHub Issues](https://github.com/dynatrace-wwse/codespaces-framework/issues)
+    or the [feedback form](https://forms.office.com/r/QaCx6VAJe8).
+
 ## What You Will Build
 
 - A containerized easyTravel AI Travel Advisor stack on Podman.
