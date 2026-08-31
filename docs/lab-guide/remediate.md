@@ -61,7 +61,7 @@ When retrieval quality drops, the LLM receives poorer grounding context, which c
 
 In this step, you will introduce a controlled embedding-model change, via an OpenFeature feature flag, to create observable drift conditions.
 
-1. As the workshop instructor, in the AAP UI locate the `destination-automation-automate-app-ai-embedding` job template
+1. As the workshop instructor, in the Ansible web UI locate the `destination-automation-automate-app-ai-embedding` job template
 2. Launch the job template and proceed to the **Extra Variables** prompt
 3. For the new embedding model value, select the same model the application is currently using
 4. Execute the job and confirm the application remains available
@@ -107,25 +107,25 @@ Keep submitting prompts and feedback. After some time, you should observe that R
 
 ## Step 3: Automated Recovery
 
-When Dynatrace observability is connected to Red Hat EDA/AAP, detected problems can trigger trusted automated responses without waiting for manual intervention. This is auto-remediation: detect, decide, and act.
+When Dynatrace observability is connected to Red Hat Ansible Automation Platform, detected problems can trigger trusted automated responses without waiting for manual intervention. This is auto-remediation: detect, decide, and act.
 
 ### How Event Driven Ansible Remediates
 
-Event Driven Ansible (EDA) is a real-time event processing and automation engine that extends Ansible Automation Platform with the ability to listen for events from multiple sources and automatically trigger predefined workflows in response. Rather than waiting for scheduled jobs or manual operator intervention, EDA adds an orchestration layer that immediately evaluates incoming events against rulebook conditions and executes remediation actions when matches occur. This enables autonomous incident response where problems detected by observability platforms like Dynatrace can be automatically remediated without human delay. In this workshop, EDA receives AI degradation events from Dynatrace, matches them against rules, and automatically executes AAP job templates that restore the application to a healthy state.
+Event Driven Ansible (EDA) is a real-time event processing and automation engine that extends Ansible Automation Platform with the ability to listen for events from multiple sources and automatically trigger predefined workflows in response. Rather than waiting for scheduled jobs or manual operator intervention, EDA adds an orchestration layer that immediately evaluates incoming events against rulebook conditions and executes remediation actions when matches occur. This enables autonomous incident response where problems detected by observability platforms like Dynatrace can be automatically remediated without human delay. In this workshop, EDA receives AI degradation events from Dynatrace, matches them against rules, and automatically executes Ansible job templates that restore the application to a healthy state.
 
 **EDA Rule Audit**
 
-1. In the AAP web interface, navigate to **Automation Decisions** -> **Rule Audit**
+1. In the Ansible web interface, navigate to **Automation Decisions** -> **Rule Audit**
 2. Find the recent event showing that EDA received an incoming event and matched it to a rule in the rulebook
 
-![AAP Remediation Rule Audit](../assets/images/aap-remediation-rule-audit.png)
+![Ansible Automation Platform Remediation Rule Audit](../assets/images/aap-remediation-rule-audit.png)
 
 What this means:
 
 - Dynatrace detected a problem condition
 - Dynatrace sends problem event data to Red Hat Event Driven Ansible
 - EDA evaluated the event against rulebook logic
-- EDA/AAP executes automation for matching rule
+- Ansible Automation Platform executes automation for matching rule
 
 **EDA Event Action**
 
@@ -133,7 +133,7 @@ What this means:
 2. Confirm the event source is Dynatrace and review the payload metadata describing the AI Travel Advisor problem
 3. Review the triggered action tied to that event
 
-![AAP Remediation Event Detail](../assets/images/aap-remediation-event-details.png)
+![Ansible Automation Platform Remediation Event Detail](../assets/images/aap-remediation-event-details.png)
 
 You should see that a remediation job template was executed. The specific job is selected because the incoming event payload matched a rulebook condition that points to the desired remediation action.
 
@@ -153,12 +153,12 @@ You should see that a remediation job template was executed. The specific job is
           extra_vars:
             app_ai_embedding_model_requested: "nomic-embed-text"</code></pre>
 
-6. Open the related job execution output in AAP.
+6. Open the related job execution output in Ansible Automation Platform.
 7. Verify the job changed the OpenFeature embedding-model flag back to the correct original model used to build the Weaviate collection.
 
-![AAP Job Execution](../assets/images/aap-remediation-job-execution.png)
+![Ansible Automation Platform Job Execution](../assets/images/aap-remediation-job-execution.png)
 
-This is the operational value of Red Hat EDA/AAP: secure, policy-driven automation that remediates issues across hybrid cloud environments using events from Dynatrace and many other sources.
+This is the operational value of Red Hat Ansible Automation Platform: secure, policy-driven automation that remediates issues across hybrid cloud environments using events from Dynatrace and many other sources.
 
 ## Step 4: Automated Anomaly Detection
 
@@ -240,7 +240,7 @@ Dynatrace correlates high vector distances with low user satisfaction signals to
 
 ![Dynatrace Workflow Send to EDA](../assets/images/dynatrace-workflow-send-to-eda.png)
 
-The workflow represents the out-of-the-box integration between Dynatrace and Red Hat EDA/AAP. When a problem is detected, Dynatrace automatically sends event data—including the problem name, affected service, metrics, and context—directly to EDA. EDA's rulebook engine matches this event payload against rules and triggers appropriate remediation actions, all without manual operator involvement.
+The workflow represents the out-of-the-box integration between Dynatrace and Red Hat Ansible Automation Platform. When a problem is detected, Dynatrace automatically sends event data—including the problem name, affected service, metrics, and context—directly to EDA. EDA's rulebook engine matches this event payload against rules and triggers appropriate remediation actions, all without manual operator involvement.
 
 ## The Value of Integrated Observability and Automation
 
@@ -260,7 +260,7 @@ Dynatrace Intelligence automatically detects anomalies without requiring manual 
 
 **Immediate Remediation**
 
-By connecting Dynatrace to Red Hat EDA/AAP, detected problems trigger automated remediation workflows instantly. Infrastructure or AI issues can be resolved in seconds, not hours. This reduces Mean Time To Recovery (MTTR) and minimizes user impact.
+By connecting Dynatrace to Red Hat Ansible Automation Platform, detected problems trigger automated remediation workflows instantly. Infrastructure or AI issues can be resolved in seconds, not hours. This reduces Mean Time To Recovery (MTTR) and minimizes user impact.
 
 **Enterprise Notifications**
 
@@ -275,7 +275,7 @@ Dynatrace's out-of-the-box integrations with ServiceNow, JIRA, Slack, PagerDuty,
 
 ## Validation
 
-- [ ] Embedding model feature flag was changed via AAP job template without causing an application outage
+- [ ] Embedding model feature flag was changed via Ansible job template without causing an application outage
 - [ ] RAG response quality degraded while Direct LLM remained unaffected, confirming drift is retrieval-specific
 - [ ] Dynatrace Intelligence automatically detected and created the **AI Travel Advisor: Embedding Model Drift Detected** problem
 - [ ] Dynatrace workflow executed and sent problem event data to Red Hat Event Driven Ansible

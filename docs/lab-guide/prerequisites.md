@@ -5,7 +5,7 @@ This section is written for workshop instructors preparing the environment befor
 ## Access and Accounts
 
 - Access to a RHEL 9 (x86 arch) instance with internet egress
-- Access to Red Hat Customer Portal for AAP installer downloads
+- Access to Red Hat Customer Portal for Ansible Automation Platform installer downloads
 - Access to a Red Hat Ansible Automation Platform 2.6 Subscription (1+ Node)
     - Trial license/subscription is OK
 - Access to a Dynatrace tenant with full admin permissions to account and tenant
@@ -22,17 +22,17 @@ This section is written for workshop instructors preparing the environment befor
 
 ## Required Inputs You Should Prepare
 
-- AAP public hostname (public FQDN of RHEL 9 instance)
-- AAP administrator password
+- Ansible Automation Platform public hostname (public FQDN of RHEL 9 instance)
+- Ansible Automation Platform administrator password
 - Dynatrace environment URL and required tokens
 - Workshop service account details used by Controller and EDA
 
 ### Dynatrace Tokens and Credentials
 
-Using full admin permissions to the Dynatrace account and tenant, create the following tokens/credentials for this workshop.  Store them in a secure location, as you will need to input them into the AAP web interface later.
+Using full admin permissions to the Dynatrace account and tenant, create the following tokens/credentials for this workshop.  Store them in a secure location, as you will need to input them into the Ansible web interface later.
 
 !!! tip "Time Management Opportunity"
-    Provisioning Red Hat Ansible Automation Platform will take some time (next step).  It is recommended to create these tokens while AAP is installing.
+    Provisioning Red Hat Ansible Automation Platform will take some time (next step).  It is recommended to create these tokens while Ansible Automation Platform is installing.
 
 **Dynatrace Platform Token (Monaco)**
 
@@ -63,7 +63,7 @@ Reference: [Dynatrace Docs](https://docs.dynatrace.com/docs/shortlink/otel-getst
 | Metrics | `metrics.ingest` |
 | Logs | `logs.ingest` |
 
-Provide in AAP credential fields:
+Provide in Ansible credential fields:
 - `DT_OTLP_ENDPOINT`
 - `DT_OTLP_TOKEN`
 
@@ -71,7 +71,7 @@ Minimum token scopes must match the signals you export (metrics, traces, logs) i
 
 **Dynatrace OAuth client credentials (EdgeConnect)**
 
-Primarily used to deploy the EdgeConnect container on the AAP host.  This credential needs permissions to read, write, and manage EdgeConnects and their OAuth clients.
+Primarily used to deploy the EdgeConnect container on the Ansible Automation Platform host.  This credential needs permissions to read, write, and manage EdgeConnects and their OAuth clients.
 
 Required scopes:
 
@@ -80,7 +80,7 @@ Required scopes:
 | Manage EdgeConnect configurations | `app-engine:edge-connects:read`, `app-engine:edge-connects:write`, `app-engine:edge-connects:delete` |
 | Manage EdgeConnect OAuth | `oauth2:clients:manage` |
 
-Provide in AAP credential fields:
+Provide in Ansible credential fields:
 - `DT_OAUTH_CLIENT_ID`
 - `DT_OAUTH_CLIENT_SECRET`
 - `DT_OAUTH_ACCOUNT_URN`
@@ -95,7 +95,7 @@ Required scopes:
 |---|---|
 | PaaS integration | `InstallerDownload`, `SupportAlert` |
 
-Provide in AAP credential fields:
+Provide in Ansible credential fields:
 - `oneagent_environment_url`
 - `oneagent_paas_token`
 

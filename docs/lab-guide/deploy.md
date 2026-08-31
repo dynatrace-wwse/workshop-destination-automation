@@ -1,22 +1,22 @@
 # Deploy
 
-Deployment uses Red Hat AAP to configure platform objects and deliver both observability components and the AI application stack.
+Deployment uses Red Hat Ansible Automation Platform to configure platform objects and deliver both observability components and the AI application stack.
 
 ## Objectives
 
-- Configure AAP Controller and EDA objects for the workshop.
+- Configure Ansible Controller and EDA objects for the workshop.
 - Deploy Dynatrace apps and API settings.
 - Deploy EdgeConnect and OneAgent.
 - Build and deploy the easyTravel AI Travel Advisor stack using Podman workflows.
 
-## Step 1: Create AAP Service Account User
+## Step 1: Create Ansible Automation Platform Service Account User
 
 Before running deployment automation, create and validate the `aap-service-account` user on the RHEL host.
 
 Reference guide:
 [ansible/deploy/docs/aap-service-account-setup.md](https://github.com/dynatrace-wwse/workshop-destination-automation/blob/main/ansible/deploy/docs/aap-service-account-setup.md){target="_blank"}
 
-## Step 2: Configure AAP and EDA
+## Step 2: Configure Ansible Automation Platform and EDA
 
 Run the bootstrap playbooks from the ansible directory.
 
@@ -43,7 +43,7 @@ Deploy Automation Decisions (Event-Driven Ansible) objects:
 ansible-playbook deploy/playbooks/configure_eda.yml
 ```
 
-After playbook completion, review credentials and inventory objects in the AAP UI.  You'll need to manually update the following credentials in the UI.
+After playbook completion, review credentials and inventory objects in the Ansible web UI.  You'll need to manually update the following credentials in the UI.
 
 **Apply Credentials via UI**
 
@@ -69,7 +69,7 @@ After playbook completion, review credentials and inventory objects in the AAP U
 
 **Create Job Template Domains (optional, recommended)**
 
-AAP Web UI -> Automation Execution (Automation Controller) -> Templates: Configure Domains (🔧 wrench icon)
+Ansible Web UI -> Automation Execution (Automation Controller) -> Templates: Configure Domains (🔧 wrench icon)
 
 - Name: Dynatrace
     - Labels: dynatrace
@@ -80,7 +80,7 @@ AAP Web UI -> Automation Execution (Automation Controller) -> Templates: Configu
 
 ## Step 3: Deploy Dynatrace Components
 
-Launch the relevant AAP job templates for:
+Launch the relevant Ansible job templates for:
 
 - Dynatrace AppEngine apps
     - `destination-automation-deploy-dynatrace-apps`
@@ -158,7 +158,7 @@ Open the Workflows app.  In the top right corner, click on the gear icon, then A
 
 ## Step 4: Deploy the AI Travel Advisor Application
 
-Run the workshop app deployment workflow template from AAP:
+Run the workshop app deployment workflow template from Ansible Automation Platform:
 
 `destination-automation-workflow-deploy-app-clean`
 
@@ -181,6 +181,6 @@ Access the app on port 81 (HTTP) of your public hostname (FQDN or IP).
 - [ ] Dynatrace components are installed and authenticated
 - [ ] OneAgent reports data from the workshop host
 - [ ] App stack is reachable and healthy
-- [ ] AAP workflows complete without failed tasks
+- [ ] Ansible workflows complete without failed tasks
 
 Continue to [Observe and Automate](observe-and-automate.md).
