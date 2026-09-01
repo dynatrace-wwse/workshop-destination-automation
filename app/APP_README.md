@@ -205,7 +205,7 @@ See `PODMAN_COMPOSE_SETUP.md` for the complete procedure.
 Important compose-specific details:
 
 - The app container listens on port `8080` internally.
-- Nginx publishes the stack externally on `http://localhost:81`.
+- Nginx publishes the stack externally on `http://localhost:80`.
 - The compose file mounts `src/`, `public/`, `prompts/`, and `destinations/` from the host into the app container.
 - Changes to Python code and content files are visible inside the container immediately, but you still need to restart the app container for Python process changes to take effect because `DEBUG` is disabled in compose.
 
@@ -244,7 +244,7 @@ curl http://localhost:8082/health
 curl http://localhost:8082/api/v1/status
 ```
 
-When using the compose deployment through Nginx, replace `:8082` with `:81`.
+When using the compose deployment through Nginx, replace `:8082` with `:80`.
 
 ## Troubleshooting
 

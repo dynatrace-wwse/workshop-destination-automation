@@ -172,7 +172,7 @@ This workflow template will perform the following:
 - Deploy the app as rootless podman containers
 - Verify health endpoints and access
 
-Access the app on port 81 (HTTP) of your public hostname (FQDN or IP).
+Access the app on port 80 (HTTP) of your public hostname (FQDN or IP).
 
 ![easyTravel AI Travel Advisor](../assets/images/easytrave-ai-travel-advisor-home.png)
 

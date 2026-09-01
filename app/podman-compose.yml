@@ -7,7 +7,7 @@ version: '3.8'
 # 4. podman exec ollama ollama pull nomic-embed-text
 # 5. podman-compose up -d travel-advisor nginx
 # 6. Edit files under ./destinations or ./prompts on the host as needed.
-# 7. Open http://localhost:81
+# 7. Open http://localhost:80
 
 services:
   # Nginx Reverse Proxy
@@ -15,7 +15,7 @@ services:
     container_name: travel-advisor-nginx
     image: docker.io/library/nginx:1.27-alpine
     ports:
-      - "81:80"
+      - "80:80"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro,Z
     depends_on:
