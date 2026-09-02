@@ -787,9 +787,23 @@
     credentials: "{{ aap_deploy_dynatrace_edgeconnect_job_template_credentials }}"
     execution_environment: "{{ aap_custom_ee_name }}"
     labels: "{{ aap_deploy_dynatrace_edgeconnect_job_template_labels }}"
-    extra_vars: "{{ aap_deploy_dynatrace_edgeconnect_job_template_extra_vars }}"
     become_enabled: "{{ aap_deploy_dynatrace_edgeconnect_job_template_become_enabled }}"
+    ask_variables_on_launch: "{{ aap_deploy_dynatrace_edgeconnect_job_template_ask_variables_on_launch }}"
     state: present
+  register: _aap_deploy_edgeconnect_jt
+
+- name: "aap_config | Set deploy Dynatrace EdgeConnect job template extra_vars with comments"
+  ansible.builtin.uri:
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_deploy_edgeconnect_jt.id }}/"
+    method: PATCH
+    user: "{{ aap_controller_username }}"
+    password: "{{ aap_controller_password }}"
+    force_basic_auth: true
+    validate_certs: "{{ aap_controller_validate_certs }}"
+    body_format: json
+    body:
+      extra_vars: "{{ aap_deploy_dynatrace_edgeconnect_job_template_extra_vars_yaml }}"
+    status_code: 200
 
 - name: "aap_config | Create clean Dynatrace API config job template"
   awx.awx.job_template:
@@ -825,9 +839,23 @@
     credentials: "{{ aap_clean_dynatrace_edgeconnect_job_template_credentials }}"
     execution_environment: "{{ aap_custom_ee_name }}"
     labels: "{{ aap_dynatrace_podman_clean_job_template_labels }}"
-    extra_vars: "{{ aap_clean_dynatrace_edgeconnect_job_template_extra_vars }}"
     become_enabled: "{{ aap_clean_dynatrace_edgeconnect_job_template_become_enabled }}"
+    ask_variables_on_launch: "{{ aap_clean_dynatrace_edgeconnect_job_template_ask_variables_on_launch }}"
     state: present
+  register: _aap_clean_edgeconnect_jt
+
+- name: "aap_config | Set clean Dynatrace EdgeConnect job template extra_vars with comments"
+  ansible.builtin.uri:
+    url: "{{ aap_controller_host_normalized }}{{ aap_controller_api_prefix }}v2/job_templates/{{ _aap_clean_edgeconnect_jt.id }}/"
+    method: PATCH
+    user: "{{ aap_controller_username }}"
+    password: "{{ aap_controller_password }}"
+    force_basic_auth: true
+    validate_certs: "{{ aap_controller_validate_certs }}"
+    body_format: json
+    body:
+      extra_vars: "{{ aap_clean_dynatrace_edgeconnect_job_template_extra_vars_yaml }}"
+    status_code: 200
 
 - name: "aap_config | Create clean Dynatrace Monaco job template"
   awx.awx.job_template:
