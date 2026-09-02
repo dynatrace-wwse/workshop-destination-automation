@@ -10,7 +10,7 @@ It assumes you want the full local stack defined in `podman-compose.yml`:
 - `travel-advisor`
 - `nginx`
 
-The compose deployment publishes the application through Nginx on `http://localhost:81`.
+The compose deployment publishes the application through Nginx on `http://localhost:80`.
 
 ## What You Need
 
@@ -134,20 +134,20 @@ Important startup note:
 Open the UI:
 
 ```text
-http://localhost:81
+http://localhost:80
 ```
 
 Verify health through Nginx:
 
 ```bash
-curl http://localhost:81/health
-curl http://localhost:81/api/v1/status
+curl http://localhost:80/health
+curl http://localhost:80/api/v1/status
 ```
 
 Run a sample query:
 
 ```bash
-curl "http://localhost:81/api/v1/completion?framework=rag&prompt=Paris"
+curl "http://localhost:80/api/v1/completion?framework=rag&prompt=Paris"
 ```
 
 ## Step 7: Update Content Or Prompting
@@ -169,7 +169,7 @@ What to do after changes:
 Rebuild the knowledge base after destination edits:
 
 ```bash
-curl http://localhost:81/api/v1/prepare-kb
+curl http://localhost:80/api/v1/prepare-kb
 ```
 
 Restart just the application container:
@@ -223,7 +223,7 @@ The `travel-advisor` service sets these runtime values directly in `podman-compo
 
 That means compose behavior differs from a plain host-based run in two notable ways:
 
-1. The app is exposed externally through Nginx on port `81`, not directly on `8082`.
+1. The app is exposed externally through Nginx on port `80`, not directly on `8082`.
 2. Compose enables tracing and uses a larger retrieval fan-out than the example `.env` file used for manual runs.
 
 ## Troubleshooting
@@ -267,7 +267,7 @@ Cause:
 Fix:
 
 ```bash
-curl http://localhost:81/api/v1/prepare-kb
+curl http://localhost:80/api/v1/prepare-kb
 ```
 
 Or temporarily set `FORCE_REINDEX=true` in `podman-compose.yml` and restart `travel-advisor`.

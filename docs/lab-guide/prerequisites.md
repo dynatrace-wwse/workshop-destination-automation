@@ -18,7 +18,7 @@ This section is written for workshop instructors preparing the environment befor
     - 200+ GB Disk recommended to avoid disk space management
 - DNS or public hostname assigned for workshop access
 - Port 22 (SSH) access required for workshop instructor
-- Ports 443 (HTTPS) and 81 (HTTP) access required for workshop instructor and participants
+- Ports 443 (HTTPS) and 80 (HTTP) access required for workshop instructor and participants
 
 ## Required Inputs You Should Prepare
 

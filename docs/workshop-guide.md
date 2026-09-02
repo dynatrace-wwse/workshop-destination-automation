@@ -39,7 +39,7 @@ This workshop demonstrates a production-style workflow using:
           ▼                            ▼
   ┌──────────────────────┐     ┌──────────────────────┐
   │ easyTravel AI stack  │◄────│ EDA webhook +        │
-  │ (public :81)         │     │ automation triggers   │
+  │ (public :80)         │     │ automation triggers   │
   │ travel-advisor :8080 │     └──────────────────────┘
   └──────────────────────┘
 ```
@@ -205,4 +205,4 @@ Optionally remove sudo permissions from aap-service-account after successful ins
 ### Build Images and Deploy App
 destination-automation-workflow-deploy-app-clean
 
-The application is now reachable at the public hostname on http port 81
+The application is now reachable at the public hostname on http port 80

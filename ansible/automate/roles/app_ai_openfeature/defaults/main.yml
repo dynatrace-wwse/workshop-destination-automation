@@ -16,4 +16,4 @@ app_ai_supported_embedding_models:
   - "gemma3:1b-it-qat"
   - "orca-mini:3b"
 
-app_ai_openfeature_base_url: "http://localhost:{{ host_nginx_port | default(81) }}"
+app_ai_openfeature_base_url: "http://localhost:{{ host_nginx_port | default(80) }}"
