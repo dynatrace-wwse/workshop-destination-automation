@@ -75,6 +75,7 @@ Use these files for function-specific detail:
 - `operate/docs/operate.md`
 - `automate/docs/automate.md`
 - `remediate/docs/remediate.md`
+- `deploy/docs/sync-repo-changes.md` (syncing repo changes to the deployed instance)
 
 Each function doc is the detailed source of truth for:
 
@@ -82,6 +83,10 @@ Each function doc is the detailed source of truth for:
 - intended execution path
 - AAP versus plain `ansible-playbook` guidance
 - function-specific operational notes
+
+Cross-function guide:
+
+- `deploy/docs/sync-repo-changes.md`: how to copy repository changes (after a `git pull` or local edit) into the AAP project copy and the service-account runtime copy that AAP jobs actually run from. Use it whenever the deployed workshop does not reflect repo changes, for example after changing playbooks, roles, inventory, `app/` source, compose files, or `dynatrace/config/`, and always before re-running job templates to pick up those changes. Do not use `configure_aap.yml` for this purpose, since it re-applies controller objects and can overwrite manual AAP UI changes.
 
 ## Directory Structure
 
