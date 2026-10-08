@@ -1,3 +1,12 @@
+---
+description: Deploy, observe and remediate a containerized easyTravel AI Travel Advisor on Podman with Red Hat Ansible Automation Platform and Dynatrace. Connect Dynatrace problem events to Event-Driven Ansible for closed-loop remediation.
+tags:
+  - classic
+  - ansible
+  - automation
+  - ai
+---
+
 # Overview
 
 This lab demonstrates how Dynatrace and Red Hat Ansible Automation Platform work together to deploy, observe, automate, and remediate a containerized AI application.
